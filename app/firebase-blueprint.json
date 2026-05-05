@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user profile in the system.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "The user's unique display name." },
+        "email": { "type": "string", "description": "The user's email." },
+        "elo_rating": { "type": "number", "description": "The user's Elo rating." },
+        "avg_accuracy": { "type": "number", "description": "The user's average move accuracy." },
+        "matches_played": { "type": "number", "description": "Total matches played." },
+        "wins": { "type": "number", "description": "Total wins." },
+        "losses": { "type": "number", "description": "Total losses." },
+        "draws": { "type": "number", "description": "Total draws." },
+        "created_at": { "type": "number", "description": "Timestamp of creation." }
+      },
+      "required": ["username", "email", "elo_rating", "avg_accuracy", "matches_played", "wins", "losses", "draws", "created_at"]
+    },
+    "Username": {
+      "title": "Username",
+      "description": "A mapping of username to UID to enforce uniqueness.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The UID of the user who owns this username." }
+      },
+      "required": ["uid"]
+    },
+    "GlobalChatMessage": {
+      "title": "GlobalChatMessage",
+      "description": "A message in the global chat.",
+      "type": "object",
+      "properties": {
+        "sender_id": { "type": "string" },
+        "sender_name": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["sender_id", "sender_name", "message", "timestamp"]
+    },
+    "MatchRecord": {
+      "title": "MatchRecord",
+      "description": "A historical record of a completed match.",
+      "type": "object",
+      "properties": {
+        "match_id": { "type": "string" },
+        "player_x": { "type": "string" },
+        "player_o": { "type": "string" },
+        "player_x_name": { "type": "string" },
+        "player_o_name": { "type": "string" },
+        "winner": { "type": "string", "description": "UID of winner, or 'Draw', or null if abandoned" },
+        "status": { "type": "string", "enum": ["completed", "abandoned", "resigned", "timeout"] },
+        "moves_count": { "type": "number" },
+        "time_control": { "type": "number", "description": "Initial time in seconds" },
+        "created_at": { "type": "number" },
+        "ended_at": { "type": "number" }
+      },
+      "required": ["match_id", "player_x", "player_o", "player_x_name", "player_o_name", "status", "moves_count", "created_at", "ended_at"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles. Users can only write their own profile."
+    },
+    "/usernames/{username}": {
+      "schema": { "$ref": "#/entities/Username" },
+      "description": "Username reservations."
+    },
+    "/global_chat/{messageId}": {
+      "schema": { "$ref": "#/entities/GlobalChatMessage" },
+      "description": "Global chat messages."
+    },
+    "/match_records/{matchId}": {
+      "schema": { "$ref": "#/entities/MatchRecord" },
+      "description": "Completed match records for history."
+    }
+  }
+}
