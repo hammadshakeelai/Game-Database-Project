@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidNewUser() {
+      return hasOnlyAllowedFields(['username', 'email', 'elo_rating', 'avg_accuracy', 'matches_played', 'wins', 'losses', 'draws', 'created_at']) &&
+             validStringLength('username', 3, 20) &&
+             request.resource.data.email is string &&
+             request.resource.data.elo_rating == 1200 &&
+             request.resource.data.avg_accuracy == 0 &&
+             request.resource.data.matches_played == 0 &&
+             request.resource.data.wins == 0 &&
+             request.resource.data.losses == 0 &&
+             request.resource.data.draws == 0 &&
+             request.resource.data.created_at is number;
+    }
+
+    function isValidUserUpdate() {
+      return hasOnlyAllowedFields(['username', 'email', 'elo_rating', 'avg_accuracy', 'matches_played', 'wins', 'losses', 'draws', 'created_at']) &&
+             request.resource.data.created_at == resource.data.created_at &&
+             request.resource.data.email == resource.data.email &&
+             request.resource.data.username == resource.data.username;
+    }
+
+    function isValidUsername() {
+      return hasOnlyAllowedFields(['uid']) &&
+             request.resource.data.uid is string;
+    }
+
+    function isValidGlobalChatMessage() {
+      return hasOnlyAllowedFields(['sender_id', 'sender_name', 'message', 'timestamp']) &&
+             request.resource.data.sender_id is string &&
+             validStringLength('sender_name', 1, 50) &&
+             validStringLength('message', 1, 500) &&
+             request.resource.data.timestamp is number;
+    }
+
+    function isValidMatchRecord() {
+      return hasOnlyAllowedFields(['player_x', 'player_o', 'player_x_name', 'player_o_name', 'winner', 'status', 'moves_count', 'created_at']) &&
+             request.resource.data.player_x is string &&
+             request.resource.data.player_o is string &&
+             request.resource.data.player_x_name is string &&
+             request.resource.data.player_o_name is string &&
+             request.resource.data.winner is string &&
+             request.resource.data.status is string &&
+             request.resource.data.moves_count is number &&
+             request.resource.data.created_at is number;
+    }
+
+    // ===============================================================
+    // Collections
+    // ===============================================================
+    
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidNewUser();
+      allow update: if isOwner(userId) && isValidUserUpdate();
+    }
+
+    match /usernames/{username} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidUsername() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /global_chat/{messageId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidGlobalChatMessage() && request.resource.data.sender_id == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /match_records/{matchId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidMatchRecord() && 
+                    (request.resource.data.player_x == request.auth.uid || request.resource.data.player_o == request.auth.uid);
+      allow update, delete: if false;
+    }
+  }
+}
