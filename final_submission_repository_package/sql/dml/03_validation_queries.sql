@@ -174,3 +174,84 @@ WHERE p.PID IS NULL
 UNION ALL SELECT 'message.reply_to -> message.message_ID', COUNT(*)
 FROM message m LEFT JOIN message parent_msg ON m.reply_to = parent_msg.message_ID
 WHERE m.reply_to IS NOT NULL AND parent_msg.message_ID IS NULL;
+
+-- ============================================================
+-- 4. BUSINESS RULE VALIDATION
+-- Checks for constraint violations and data quality issues
+-- ============================================================
+
+-- Elo range validation: players with invalid rank_elo
+SELECT 'player.rank_elo OUT OF RANGE' AS check_name, COUNT(*) AS violation_count
+FROM player
+WHERE rank_elo < 0 OR rank_elo > 5000;
+
+-- Duplicate email check: email appears more than once
+SELECT 'player.email DUPLICATES' AS check_name, COUNT(*) AS violation_count
+FROM player
+GROUP BY email
+HAVING COUNT(*) > 1;
+
+-- Self-friendship check: friends table where PID1 = PID2
+SELECT 'friends.SELF_FRIENDSHIP' AS check_name, COUNT(*) AS violation_count
+FROM friends
+WHERE PID1 = PID2;
+
+-- Invalid tournament status: not in allowed set
+SELECT 'tournament.status INVALID' AS check_name, COUNT(*) AS violation_count
+FROM tournament
+WHERE status NOT IN ('scheduled', 'in_progress', 'completed', 'cancelled', 'on_hold');
+
+-- Invalid game status: not in allowed set
+SELECT 'game.status INVALID' AS check_name, COUNT(*) AS violation_count
+FROM game
+WHERE status NOT IN ('pending', 'in_progress', 'completed', 'abandoned', 'dispute');
+
+-- Negative game scores: game_player.score should be non-negative
+SELECT 'game_player.score NEGATIVE' AS check_name, COUNT(*) AS violation_count
+FROM game_player
+WHERE score < 0;
+
+-- Invalid game_history results: not in allowed set
+SELECT 'game_history.result INVALID' AS check_name, COUNT(*) AS violation_count
+FROM game_history
+WHERE result NOT IN ('win', 'loss', 'draw', 'forfeit', 'bye');
+
+-- Elo change range validation: elo_change should be realistic (typically -100 to +100)
+SELECT 'game_history.elo_change OUT OF RANGE' AS check_name, COUNT(*) AS violation_count
+FROM game_history
+WHERE elo_change < -200 OR elo_change > 200;
+
+-- Invalid leaderboard rank positions: rank_position should be > 0
+SELECT 'leaderboard.rank_position INVALID' AS check_name, COUNT(*) AS violation_count
+FROM leaderboard
+WHERE rank_position <= 0;
+
+-- Leaderboard Elo snapshots should be in valid range
+SELECT 'leaderboard.elo_snapshot OUT OF RANGE' AS check_name, COUNT(*) AS violation_count
+FROM leaderboard
+WHERE elo_snapshot < 0 OR elo_snapshot > 5000;
+
+-- Invalid tournament participant count: should be positive
+SELECT 'tournament.max_participants INVALID' AS check_name, COUNT(*) AS violation_count
+FROM tournament
+WHERE max_participants <= 1;
+
+-- Invalid structure rounds: should be positive
+SELECT 'structure.rounds INVALID' AS check_name, COUNT(*) AS violation_count
+FROM structure
+WHERE rounds <= 0;
+
+-- Invalid notification status: not in allowed set
+SELECT 'notification.is_read INVALID' AS check_name, COUNT(*) AS violation_count
+FROM notification
+WHERE is_read NOT IN (TRUE, FALSE);
+
+-- Invalid message is_read status: not in allowed set
+SELECT 'message.is_read INVALID' AS check_name, COUNT(*) AS violation_count
+FROM message
+WHERE is_read NOT IN (TRUE, FALSE);
+
+-- Verify Elo entry requirements are logical: min <= max
+SELECT 'tournament.ENTRY_ELO_INVALID' AS check_name, COUNT(*) AS violation_count
+FROM tournament
+WHERE entry_elo_min > entry_elo_max;
