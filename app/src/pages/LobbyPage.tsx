@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth, localSignOut } from '../AuthContext';
 
 import { motion } from 'motion/react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import ChatBox from '../components/ChatBox';
+import NotificationBell from '../components/NotificationBell';
 import { cn, generateMatchId, formatDate, getMatchHistory, BOT_DIFFICULTY_LABELS, BOT_DIFFICULTY_COLORS } from '../utils';
 import type { MatchRecord } from '../types';
+import { listGameTypes } from '../stores';
 
 export default function LobbyPage() {
   const { user, profile, isLocalMode } = useAuth();
@@ -35,6 +37,8 @@ export default function LobbyPage() {
   const [botDifficulty, setBotDifficulty] = useState(3);
   const [gameMode, setGameMode] = useState<'bot' | 'friend'>('bot');
   const [joinCode, setJoinCode] = useState('');
+  const gameTypes = useMemo(() => listGameTypes(), []);
+  const [gameTypeId, setGameTypeId] = useState<string>(gameTypes[0]?.gt_id ?? '');
 
   // Socket-based global chat
   useEffect(() => {
@@ -55,9 +59,18 @@ export default function LobbyPage() {
     });
   };
 
+  const persistGameTypeSelection = (matchId: string) => {
+    if (gameTypeId) {
+      try {
+        localStorage.setItem(`match_gametype_${matchId}`, gameTypeId);
+      } catch {/* ignore quota errors */}
+    }
+  };
+
   const createPrivateMatch = () => {
     const matchId = generateMatchId();
     if (socket && user) {
+      persistGameTypeSelection(matchId);
       socket.emit('create_match', { matchId, userId: user.uid });
       setTimeout(() => navigate(`/play/${matchId}`), 100);
     }
@@ -66,6 +79,7 @@ export default function LobbyPage() {
   const createBotMatch = () => {
     const matchId = generateMatchId('bot');
     if (socket && user) {
+      persistGameTypeSelection(matchId);
       socket.emit('create_match', { matchId, userId: user.uid, isBotMatch: true, botDifficulty });
       setTimeout(() => navigate(`/play/${matchId}`), 100);
     }
@@ -104,22 +118,50 @@ export default function LobbyPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-4 sm:p-8 overflow-y-auto relative">
-        <div className="absolute top-4 sm:top-8 right-4 sm:right-8 flex items-center gap-3 flex-wrap">
-          <Link to="/leaderboard" className="text-slate-400 hover:text-indigo-400 transition-colors text-sm font-medium flex items-center gap-1.5">
-            📊 Leaderboard
-          </Link>
-          <Link to={`/profile/${user?.uid}`} className="text-slate-400 hover:text-indigo-400 transition-colors text-sm font-medium flex items-center gap-1.5">
-            👤 Profile
-          </Link>
-          <button
-            onClick={() => { localSignOut(); window.location.href = '/'; }}
-            className="text-slate-400 hover:text-red-400 transition-colors text-sm font-medium"
-          >
-            Logout →
-          </button>
+        <div className="sticky top-0 -mx-4 -mt-4 sm:-mx-8 sm:-mt-8 mb-6 px-4 sm:px-8 py-3 bg-slate-900/90 backdrop-blur-md border-b border-slate-700 z-20 flex items-center gap-3 flex-wrap">
+          <nav className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
+            {[
+              { to: '/lobby', label: 'Lobby' },
+              { to: '/tournaments', label: 'Tournaments' },
+              { to: '/groups', label: 'Groups' },
+              { to: '/friends', label: 'Friends' },
+              { to: '/leaderboard', label: 'Leaderboard' },
+            ].map(item => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/lobby'}
+                className={({ isActive }) =>
+                  cn(
+                    'px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap',
+                    isActive
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-800',
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2 shrink-0">
+            <NotificationBell />
+            <Link
+              to={`/profile/${user?.uid}`}
+              className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-sm font-semibold text-white"
+            >
+              Profile
+            </Link>
+            <button
+              onClick={() => { localSignOut(); window.location.href = '/'; }}
+              className="text-slate-400 hover:text-red-500 transition-colors text-sm font-medium px-2"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8 mt-12 sm:mt-8">
+        <div className="max-w-4xl mx-auto space-y-8">
           {/* Profile Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -147,13 +189,13 @@ export default function LobbyPage() {
                 onClick={() => { setGameMode('friend'); setShowCustomModal(true); }}
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20 w-full"
               >
-                ⚔️ Play Online (PvP)
+                Play Online
               </button>
               <button
                 onClick={() => { setGameMode('bot'); setShowCustomModal(true); }}
                 className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/20 w-full"
               >
-                🤖 Play Computer
+                Play Computer
               </button>
             </div>
           </motion.div>
@@ -166,7 +208,7 @@ export default function LobbyPage() {
             className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4"
           >
             <div>
-              <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">🔗 Join with Code</h2>
+              <h2 className="text-xl font-bold text-white mb-1">Join with Code</h2>
               <p className="text-sm text-slate-400">Have a match code from a friend? Enter it here.</p>
             </div>
             <form onSubmit={joinMatchByCode} className="flex w-full md:w-auto gap-2">
@@ -195,7 +237,7 @@ export default function LobbyPage() {
             transition={{ delay: 0.15 }}
             className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 shadow-xl"
           >
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">💡 Pro Tips</h2>
+            <h2 className="text-xl font-bold text-white mb-4">Pro Tips</h2>
             <ul className="space-y-2 text-sm text-slate-300 list-disc list-inside">
               <li><strong>Control the Center:</strong> Winning the center sub-board gives you a massive strategic advantage.</li>
               <li><strong>Force Moves:</strong> Send your opponent to sub-boards that are already won or full for free choice.</li>
@@ -207,7 +249,7 @@ export default function LobbyPage() {
           {/* Match History */}
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">⏱️ Recent Matches</h2>
+              <h2 className="text-2xl font-bold text-white">Recent Matches</h2>
               <Link
                 to={`/profile/${user?.uid}`}
                 className="text-sm px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
@@ -249,7 +291,6 @@ export default function LobbyPage() {
                             <div className="flex items-center gap-2">
                               {match.isBotMatch ? (
                                 <>
-                                  <span className="text-base leading-none" title="Computer opponent">🤖</span>
                                   <span className="text-white font-medium">Computer</span>
                                   {diffLabel && (
                                     <span className={cn('text-xs px-1.5 py-0.5 rounded border font-semibold', diffColor)}>
@@ -258,12 +299,9 @@ export default function LobbyPage() {
                                   )}
                                 </>
                               ) : (
-                                <>
-                                  <span className="text-base leading-none">👤</span>
-                                  <span className="text-white font-medium">
-                                    {isPlayerX ? match.player_o_name : match.player_x_name || 'Player'}
-                                  </span>
-                                </>
+                                <span className="text-white font-medium">
+                                  {isPlayerX ? match.player_o_name : match.player_x_name || 'Player'}
+                                </span>
                               )}
                             </div>
                           </td>
@@ -310,7 +348,7 @@ export default function LobbyPage() {
                   gameMode === 'bot' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                 )}
               >
-                🤖 Play Bot
+                Play Bot
               </button>
               <button
                 onClick={() => setGameMode('friend')}
@@ -319,15 +357,35 @@ export default function LobbyPage() {
                   gameMode === 'friend' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                 )}
               >
-                ⚔️ Play Friend
+                Play Friend
               </button>
+            </div>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-slate-400 mb-2">Game Type</label>
+              <select
+                value={gameTypeId}
+                onChange={e => setGameTypeId(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              >
+                {gameTypes.map(g => (
+                  <option key={g.gt_id} value={g.gt_id}>
+                    {g.type_name} {g.is_ranked ? '· Ranked' : '· Casual'}
+                  </option>
+                ))}
+              </select>
+              {gameTypeId && (
+                <p className="text-xs text-slate-500 mt-1.5">
+                  {gameTypes.find(g => g.gt_id === gameTypeId)?.description}
+                </p>
+              )}
             </div>
 
             {gameMode === 'bot' && (
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-400 mb-2">
-                    Difficulty: <span className="text-indigo-400 font-bold">{difficultyLabels[botDifficulty]}</span>
+                    Difficulty: <span className="text-indigo-600 font-bold">{difficultyLabels[botDifficulty]}</span>
                   </label>
                   <input
                     type="range"

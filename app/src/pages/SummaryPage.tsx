@@ -20,9 +20,8 @@ export default function SummaryPage() {
   const isDraw = state?.isDraw ?? false;
   const accuracy = state?.accuracy;
 
-  const resultText = isWinner ? 'Victory!' : isDraw ? 'Draw' : 'Defeat';
-  const resultEmoji = isWinner ? '🏆' : isDraw ? '🤝' : '💔';
-  const resultColor = isWinner ? 'text-emerald-400' : isDraw ? 'text-slate-400' : 'text-red-400';
+  const resultText = isWinner ? 'Victory' : isDraw ? 'Draw' : 'Defeat';
+  const resultColor = isWinner ? 'text-emerald-600' : isDraw ? 'text-slate-400' : 'text-red-500';
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -40,17 +39,7 @@ export default function SummaryPage() {
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
         className="max-w-2xl w-full bg-slate-800/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-slate-700 z-10"
       >
-        {/* Result */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="text-center mb-2"
-        >
-          <span className="text-6xl">{resultEmoji}</span>
-        </motion.div>
-
-        <h1 className={cn("text-4xl sm:text-5xl font-black text-center mb-2", resultColor)}>
+        <h1 className={cn("text-4xl sm:text-5xl font-black text-center mb-2 font-serif tracking-tight", resultColor)}>
           {resultText}
         </h1>
         <p className="text-slate-500 text-center mb-8 font-mono text-sm">Match {matchId}</p>
@@ -127,9 +116,9 @@ export default function SummaryPage() {
         >
           <button
             onClick={() => navigate(`/review/${matchId}`)}
-            className="w-full py-4 bg-violet-600 hover:bg-violet-700 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20"
           >
-            <span>🎓</span> Review Game
+            Review Game
           </button>
           <button
             onClick={() => navigate('/lobby')}

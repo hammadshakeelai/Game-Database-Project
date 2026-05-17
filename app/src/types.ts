@@ -161,3 +161,124 @@ export interface CoachComment {
   detail: string;
   bestMoveDescription: string | null;
 }
+
+// ============================================================
+// ERD Entity Types — mirror milestone4_ddl.sql tables
+// ============================================================
+
+/** GAMETYPE — defines a game variant (board size, ranked, time limit) */
+export interface GameType {
+  gt_id: string;
+  type_name: string;
+  description: string;
+  max_duration_sec: number;
+  is_ranked: boolean;
+  board_size: string;
+  created_at: number;
+}
+
+/** STRUCTURE — tournament format definitions */
+export type StructureFormat =
+  | 'single_elimination'
+  | 'double_elimination'
+  | 'round_robin'
+  | 'swiss'
+  | 'league'
+  | 'ladder';
+
+export type SeedingMethod =
+  | 'random'
+  | 'elo_based'
+  | 'manual'
+  | 'regional'
+  | 'balanced';
+
+export interface Structure {
+  struct_id: string;
+  format_type: StructureFormat;
+  details: string;
+  rounds: number;
+  seeding_method: SeedingMethod;
+}
+
+/** TOURNAMENT */
+export type TournamentStatus = 'scheduled' | 'active' | 'completed' | 'cancelled';
+
+export interface Tournament {
+  tid: string;
+  name: string;
+  struct_id: string;
+  game_type_id: string;
+  organizer_pid: string;
+  reward: string;
+  scheduled_at: number;
+  max_participants: number;
+  entry_elo_min: number;
+  entry_elo_max: number;
+  status: TournamentStatus;
+  created_at: number;
+}
+
+/** PARTICIPANT — junction table tournament <-> player */
+export interface Participant {
+  tid: string;
+  pid: string;
+  seed: number | null;
+  enrolled_at: number;
+  eliminated: boolean;
+  final_rank: number | null;
+  prize_awarded: string | null;
+}
+
+/** FRIENDS — self-referencing M:N over player */
+export type FriendStatus = 'pending' | 'accepted' | 'blocked';
+
+export interface Friend {
+  pid1: string;
+  pid2: string;
+  since: number;
+  status: FriendStatus;
+  requested_by: string;
+}
+
+/** GROUP_T */
+export interface Group {
+  gid: string;
+  group_name: string;
+  description: string;
+  owner_pid: string;
+  banner_url: string | null;
+  max_members: number;
+  created_at: number;
+  is_public: boolean;
+}
+
+/** GROUP_LIST — junction table */
+export type GroupRole = 'owner' | 'admin' | 'moderator' | 'member';
+
+export interface GroupMember {
+  gid: string;
+  pid: string;
+  role: GroupRole;
+  joined_at: number;
+  invited_by: string | null;
+}
+
+/** NOTIFICATION */
+export type NotificationType =
+  | 'friend_request'
+  | 'tournament_invite'
+  | 'game_result'
+  | 'group_invite'
+  | 'rank_update'
+  | 'chat_message';
+
+export interface Notification {
+  nid: string;
+  recipient_pid: string;
+  type: NotificationType;
+  ref_id: string | null;
+  content: string;
+  is_read: boolean;
+  created_at: number;
+}

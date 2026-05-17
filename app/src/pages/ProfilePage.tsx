@@ -130,7 +130,6 @@ export default function ProfilePage() {
                       <div className="min-w-0">
                         {match.isBotMatch ? (
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-lg leading-none">🤖</span>
                             <span className="font-bold text-white">Computer</span>
                             {diffLabel && (
                               <span className={cn('text-xs px-1.5 py-0.5 rounded border font-semibold', diffColor)}>
@@ -140,7 +139,6 @@ export default function ProfilePage() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="text-base leading-none">👤</span>
                             <span className="font-bold text-white truncate">
                               vs {isPlayerX ? match.player_o_name : match.player_x_name || 'Player'}
                             </span>

@@ -6,9 +6,9 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-rose-500/10 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-cyan-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-rose-400/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-violet-500/10 rounded-full blur-[100px]" />
       </div>
 
       <motion.div
@@ -23,9 +23,8 @@ export default function LandingPage() {
           animate={{ scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="text-6xl mb-4">🎮</div>
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tight">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 animate-gradient-text">
+          <h1 className="text-5xl sm:text-7xl font-black tracking-tight font-serif">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-indigo-600 animate-gradient-text">
               Super Tic-Tac-Toe
             </span>
           </h1>
@@ -64,7 +63,7 @@ export default function LandingPage() {
         >
           <Link
             to="/register"
-            className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl shadow-indigo-500/30"
+            className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl font-bold transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl shadow-indigo-500/30"
           >
             Get Started
           </Link>

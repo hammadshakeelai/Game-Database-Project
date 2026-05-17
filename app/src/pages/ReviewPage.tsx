@@ -217,7 +217,7 @@ export default function ReviewPage() {
             ← Lobby
           </button>
           <h1 className="text-sm sm:text-lg font-bold text-white">
-            🎓 Review: <span className="text-violet-400 font-mono text-sm">{matchId}</span>
+            Review: <span className="text-violet-500 font-mono text-sm">{matchId}</span>
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -227,8 +227,8 @@ export default function ReviewPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center gap-2"
             >
-              <span className="px-2 py-1 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-lg text-xs font-bold">
-                🔀 Self-Review Branch
+              <span className="px-2 py-1 bg-violet-500/20 text-violet-500 border border-violet-500/40 rounded-lg text-xs font-bold">
+                Self-Review Branch
               </span>
               <button
                 onClick={exitBranch}
@@ -283,7 +283,7 @@ export default function ReviewPage() {
                   : 'bg-red-500/20 text-red-400 border-red-500/30'
               )}
             >
-              {record.winner === 'Draw' ? '🤝 Game Drawn' : `${record.winner} Wins`}
+              {record.winner === 'Draw' ? 'Game Drawn' : `${record.winner} Wins`}
             </motion.div>
           )}
 

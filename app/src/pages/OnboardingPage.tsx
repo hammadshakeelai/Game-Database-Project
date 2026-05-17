@@ -61,8 +61,7 @@ export default function OnboardingPage() {
         className="bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-700"
       >
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">🎮</div>
-          <h1 className="text-3xl font-bold text-white mb-2">Choose a Username</h1>
+          <h1 className="text-3xl font-bold text-white mb-2 font-serif">Choose a Username</h1>
           <p className="text-slate-400">This is how other players will see you.</p>
         </div>
 
@@ -100,7 +99,7 @@ export default function OnboardingPage() {
                 Creating...
               </>
             ) : (
-              '🚀 Start Playing'
+              'Start Playing'
             )}
           </button>
         </form>

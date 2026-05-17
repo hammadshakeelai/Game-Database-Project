@@ -195,16 +195,16 @@ export default function GameRoomPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => { navigator.clipboard.writeText(window.location.href); }}
-            className="px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/20 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 text-xs font-medium transition-colors"
           >
-            📋 Share
+            Share
           </button>
           <button
             onClick={requestHint}
             disabled={gameState.currentPlayer !== playerRole || gameState.winner !== null}
-            className="px-3 py-1.5 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-sky-500/20 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-sky-500/30 text-xs font-medium transition-colors"
           >
-            💡 Hint
+            Hint
           </button>
           <button
             onClick={handleResign}
@@ -213,17 +213,17 @@ export default function GameRoomPage() {
               "px-3 py-1.5 rounded-lg border text-xs font-medium transition-all",
               confirmResign
                 ? "bg-red-600 text-white border-red-500 animate-pulse"
-                : "bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
+                : "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/30"
             )}
           >
-            {confirmResign ? 'Confirm?' : '🏳️ Resign'}
+            {confirmResign ? 'Confirm?' : 'Resign'}
           </button>
           <button
             onClick={offerDraw}
             disabled={playerRole === 'Spectator'}
             className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg border border-slate-600 text-xs font-medium transition-colors"
           >
-            🤝 Draw
+            Draw
           </button>
           <ConnectionStatus status={connStatus} />
         </div>

@@ -1,7 +1,92 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Base Styles
+   Mature Ivory + Deep Purple palette (chess.com inspired)
+   Tailwind v4 design tokens overridden via @theme.
+   ============================================================ */
+
+@theme {
+  /* Slate scale repurposed as warm ivory / tan / ink neutrals.
+     900 = page background (ivory)
+     800 = card surface (cream)
+     700 = input + border (warm tan)
+     600 = hover/divider
+     500..100 = progressively darker text */
+  --color-slate-900: #f1ead7;
+  --color-slate-800: #faf4e3;
+  --color-slate-700: #e2d8bd;
+  --color-slate-600: #c0b497;
+  --color-slate-500: #8a7d6a;
+  --color-slate-400: #635742;
+  --color-slate-300: #443a55;
+  --color-slate-200: #2d2440;
+  --color-slate-100: #1d1530;
+
+  /* Indigo recoloured as deep mature purple (player X + primary CTA) */
+  --color-indigo-100: #e6dcf2;
+  --color-indigo-200: #c9b6e0;
+  --color-indigo-300: #9b81c4;
+  --color-indigo-400: #6f4ca3;
+  --color-indigo-500: #553a85;
+  --color-indigo-600: #422866;
+  --color-indigo-700: #321c50;
+  --color-indigo-800: #22133a;
+  --color-indigo-900: #150a26;
+
+  /* Violet aligned with indigo for review / branch UI */
+  --color-violet-300: #b39ad6;
+  --color-violet-400: #7e5cb5;
+  --color-violet-500: #604296;
+  --color-violet-600: #4a307a;
+  --color-violet-700: #382260;
+  --color-violet-800: #271647;
+
+  /* Rose mapped to deep maroon (player O) */
+  --color-rose-100: #f4dce0;
+  --color-rose-200: #dca4ac;
+  --color-rose-300: #c97c89;
+  --color-rose-400: #a14758;
+  --color-rose-500: #88324a;
+  --color-rose-600: #6f2238;
+
+  /* Emerald muted to olive sage (success) */
+  --color-emerald-300: #8ba978;
+  --color-emerald-400: #6e8a5a;
+  --color-emerald-500: #5b7548;
+  --color-emerald-600: #485e39;
+  --color-emerald-700: #38492c;
+
+  /* Cyan replaced with light lavender for gradient text */
+  --color-cyan-300: #c3afe0;
+  --color-cyan-400: #9b81c4;
+  --color-cyan-500: #7e5cb5;
+
+  /* Reds — warm brick */
+  --color-red-300: #c97a78;
+  --color-red-400: #a8413e;
+  --color-red-500: #913230;
+  --color-red-600: #7a2826;
+
+  /* Warm amber / gold accents */
+  --color-amber-300: #d3a04a;
+  --color-amber-400: #b88830;
+  --color-amber-500: #a07426;
+
+  /* Sky muted */
+  --color-sky-300: #7da4c4;
+  --color-sky-400: #4f7da5;
+  --color-sky-500: #3e6388;
+
+  /* Blue muted */
+  --color-blue-300: #7a8db8;
+  --color-blue-400: #4d6a96;
+  --color-blue-500: #3e5680;
+
+  --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ============================================================
+   Base
    ============================================================ */
 
 html {
@@ -9,160 +94,146 @@ html {
 }
 
 body {
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-family-sans);
+  background-color: var(--color-slate-900);
+  color: var(--color-slate-100);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Selection colors */
 ::selection {
-  background-color: rgba(99, 102, 241, 0.3);
-  color: #e2e8f0;
+  background-color: rgba(85, 58, 133, 0.25);
+  color: var(--color-slate-100);
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.3);
-  border-radius: 3px;
+  background: rgba(85, 58, 133, 0.25);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.5);
+  background: rgba(85, 58, 133, 0.45);
 }
 
 /* ============================================================
-   Theme: Standard (Default — Dark Slate)
+   text-white remapping.
+
+   In the original dark theme `text-white` was the default heading
+   colour over slate-900. Globally make it ink-dark for the ivory
+   theme, then push it back to cream only when it sits on a dark
+   purple / emerald / rose / red surface (solid or gradient).
    ============================================================ */
 
-:root {
-  --bg-color: #0f172a;
-  --text-color: #e2e8f0;
-  --board-bg: #1e293b;
-  --cell-bg: #1e293b;
-  --cell-hover: rgba(99, 102, 241, 0.3);
-  --x-color: #818cf8;
-  --o-color: #fb7185;
-  --font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+.text-white {
+  color: var(--color-slate-100);
+}
+
+.bg-indigo-500.text-white,
+.bg-indigo-600.text-white,
+.bg-indigo-700.text-white,
+.bg-indigo-800.text-white,
+.bg-violet-500.text-white,
+.bg-violet-600.text-white,
+.bg-violet-700.text-white,
+.bg-emerald-500.text-white,
+.bg-emerald-600.text-white,
+.bg-emerald-700.text-white,
+.bg-rose-500.text-white,
+.bg-rose-600.text-white,
+.bg-red-500.text-white,
+.bg-red-600.text-white {
+  color: #faf4e3;
+}
+
+[class*="from-indigo-"].text-white,
+[class*="from-violet-"].text-white,
+[class*="from-emerald-"].text-white,
+[class*="from-rose-"].text-white,
+[class*="from-red-"].text-white,
+[class*="from-purple-"].text-white {
+  color: #faf4e3;
 }
 
 /* ============================================================
-   Theme: Retro Pixel
+   Surface tuning — subtle warm shadow for cream cards
+   ============================================================ */
+
+.bg-slate-800 {
+  box-shadow: 0 1px 2px rgba(38, 25, 56, 0.06);
+}
+
+input, textarea, select {
+  color: var(--color-slate-100);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-slate-500);
+}
+
+/* ============================================================
+   Game animations
+   ============================================================ */
+
+@keyframes board-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(85, 58, 133, 0.25); }
+  50%      { box-shadow: 0 0 22px rgba(85, 58, 133, 0.45); }
+}
+
+@keyframes hint-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(79, 125, 165, 0.4); }
+  50%      { box-shadow: 0 0 16px rgba(79, 125, 165, 0.75); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
+}
+
+/* ============================================================
+   Alternate themes (preserved, opt-in via class on root)
    ============================================================ */
 
 .retro {
   --bg-color: #2b2b2b;
   --text-color: #ffffff;
   --board-bg: #000000;
-  --cell-bg: #000000;
-  --cell-hover: #444444;
   --x-color: #ff0000;
   --o-color: #0000ff;
-  --font-family: "Courier New", Courier, monospace;
 }
-
-.retro * {
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  font-family: var(--font-family) !important;
-}
-
+.retro * { border-radius: 0 !important; box-shadow: none !important; font-family: "Courier New", Courier, monospace !important; }
 .retro .bg-slate-900 { background-color: var(--bg-color) !important; }
 .retro .bg-slate-800 { background-color: var(--board-bg) !important; border: 2px solid #fff; }
-.retro .text-indigo-400 { color: var(--x-color) !important; }
-.retro .text-rose-400 { color: var(--o-color) !important; }
-
-/* ============================================================
-   Theme: Neon Cyberpunk
-   ============================================================ */
 
 .neon {
   --bg-color: #050510;
   --text-color: #00ffcc;
   --board-bg: #0a0a20;
-  --cell-bg: #0a0a20;
-  --cell-hover: rgba(255, 0, 255, 0.3);
   --x-color: #ff00ff;
   --o-color: #00ffff;
-  --font-family: "Orbitron", "Inter", sans-serif;
 }
-
-.neon * {
-  font-family: var(--font-family);
-}
-
+.neon * { font-family: "Orbitron", "Inter", sans-serif; }
 .neon .bg-slate-900 { background-color: var(--bg-color) !important; }
-.neon .bg-slate-800 {
-  background-color: var(--board-bg) !important;
-  border: 1px solid #ff00ff;
-  box-shadow: 0 0 10px #ff00ff, inset 0 0 10px #ff00ff !important;
-}
-.neon .text-indigo-400 { color: var(--x-color) !important; text-shadow: 0 0 5px var(--x-color); }
-.neon .text-rose-400 { color: var(--o-color) !important; text-shadow: 0 0 5px var(--o-color); }
-
-/* ============================================================
-   Theme: Clean Minimalist (Light)
-   ============================================================ */
+.neon .bg-slate-800 { background-color: var(--board-bg) !important; border: 1px solid #ff00ff; box-shadow: 0 0 10px #ff00ff, inset 0 0 10px #ff00ff !important; }
 
 .minimalist {
   --bg-color: #f8fafc;
   --text-color: #0f172a;
   --board-bg: #ffffff;
-  --cell-bg: #ffffff;
-  --cell-hover: #f1f5f9;
   --x-color: #000000;
   --o-color: #94a3b8;
-  --font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-
-.minimalist * {
-  font-family: var(--font-family);
-}
-
 .minimalist .bg-slate-900 { background-color: var(--bg-color) !important; color: var(--text-color) !important; }
 .minimalist .bg-slate-800 { background-color: var(--board-bg) !important; border: 1px solid #e2e8f0; box-shadow: none !important; }
-.minimalist .text-white { color: var(--text-color) !important; }
-.minimalist .text-slate-400 { color: #64748b !important; }
-.minimalist .text-indigo-400 { color: var(--x-color) !important; }
-.minimalist .text-rose-400 { color: var(--o-color) !important; }
-.minimalist .border-slate-800 { border-color: #e2e8f0 !important; }
-.minimalist .border-slate-700 { border-color: #e2e8f0 !important; }
-
-/* ============================================================
-   Game-Specific Animations
-   ============================================================ */
-
-/* Pulse effect for active/playable sub-boards */
-@keyframes board-pulse {
-  0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
-  50% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.4); }
-}
-
-/* Glow effect for hint cells */
-@keyframes hint-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); }
-  50% { box-shadow: 0 0 16px rgba(56, 189, 248, 0.8); }
-}
-
-/* Subtle float for the landing page title */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-
-/* Gradient text animation */
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-gradient-text {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
-}

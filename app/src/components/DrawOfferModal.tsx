@@ -22,8 +22,7 @@ export default function DrawOfferModal({ offeredBy, onAccept, onDecline }: DrawO
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-700 shadow-2xl text-center"
         >
-          <div className="text-4xl mb-4">🤝</div>
-          <h3 className="text-xl font-bold text-white mb-2">Draw Offer</h3>
+          <h3 className="text-xl font-bold text-white mb-2 font-serif">Draw Offer</h3>
           <p className="text-slate-400 mb-6">Your opponent ({offeredBy}) is offering a draw.</p>
           <div className="flex gap-3">
             <button onClick={onDecline} className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-all">Decline</button>

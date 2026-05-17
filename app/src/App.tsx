@@ -16,6 +16,12 @@ import OnboardingPage from './pages/OnboardingPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
 import ReviewPage from './pages/ReviewPage';
+import FriendsPage from './pages/FriendsPage';
+import GroupsPage from './pages/GroupsPage';
+import GroupDetailPage from './pages/GroupDetailPage';
+import TournamentsPage from './pages/TournamentsPage';
+import TournamentDetailPage from './pages/TournamentDetailPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileLoading } = useAuth();
@@ -58,6 +64,12 @@ export default function App() {
             <Route path="/play/:matchId" element={<ProtectedRoute><GameRoomPage /></ProtectedRoute>} />
             <Route path="/summary/:matchId" element={<ProtectedRoute><SummaryPage /></ProtectedRoute>} />
             <Route path="/review/:matchId" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+            <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
+            <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
+            <Route path="/groups/:gid" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
+            <Route path="/tournaments" element={<ProtectedRoute><TournamentsPage /></ProtectedRoute>} />
+            <Route path="/tournaments/:tid" element={<ProtectedRoute><TournamentDetailPage /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
           </Routes>
         </Router>
       </AuthProvider>

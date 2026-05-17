@@ -23,13 +23,12 @@ export default function GameOverModal({
   const isDraw = winner === 'Draw';
   const isLoser = !isWinner && !isDraw;
 
-  const resultText = isWinner ? 'Victory!' : isDraw ? 'Draw!' : 'Defeat';
-  const resultEmoji = isWinner ? '🏆' : isDraw ? '🤝' : '💔';
+  const resultText = isWinner ? 'Victory' : isDraw ? 'Draw' : 'Defeat';
   const resultColor = isWinner
-    ? 'from-emerald-500 to-emerald-400'
+    ? 'from-emerald-600 to-emerald-500'
     : isDraw
     ? 'from-slate-400 to-slate-300'
-    : 'from-red-500 to-red-400';
+    : 'from-red-600 to-red-500';
 
   return (
     <AnimatePresence>
@@ -46,20 +45,10 @@ export default function GameOverModal({
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className="bg-slate-800 rounded-3xl p-8 w-full max-w-md border border-slate-700 shadow-2xl text-center"
         >
-          {/* Emoji */}
-          <motion.div
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="text-7xl mb-4"
-          >
-            {resultEmoji}
-          </motion.div>
-
           {/* Result Text */}
           <h2
             className={cn(
-              "text-4xl font-black mb-2 bg-gradient-to-r bg-clip-text text-transparent",
+              "text-5xl font-black mb-2 font-serif tracking-tight bg-gradient-to-r bg-clip-text text-transparent",
               resultColor
             )}
           >
@@ -93,9 +82,9 @@ export default function GameOverModal({
             {onReview && (
               <button
                 onClick={onReview}
-                className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20"
               >
-                <span>🎓</span> Review Game
+                Review Game
               </button>
             )}
             <div className="flex gap-3">

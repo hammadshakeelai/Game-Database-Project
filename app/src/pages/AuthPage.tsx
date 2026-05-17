@@ -390,7 +390,7 @@ export default function AuthPage() {
                 </>
               ) : (
                 <>
-                  {isLogin ? '🔑 Sign In' : '🚀 Create Account'}
+                  {isLogin ? 'Sign In' : 'Create Account'}
                 </>
               )}
             </button>

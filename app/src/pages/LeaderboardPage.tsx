@@ -4,6 +4,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserProfile } from '../AuthContext';
+import { cn } from '../utils';
 
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState<(UserProfile & { id: string })[]>([]);
@@ -71,8 +72,16 @@ export default function LeaderboardPage() {
                   
                   return (
                     <tr key={player.id} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 text-center font-mono text-slate-500">
-                        {index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                      <td className="p-4 text-center font-mono">
+                        <span className={cn(
+                          'inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-xs',
+                          index === 0 ? 'bg-amber-400/30 text-amber-500 border border-amber-400/50' :
+                          index === 1 ? 'bg-slate-500/20 text-slate-400 border border-slate-500/40' :
+                          index === 2 ? 'bg-amber-600/20 text-amber-600 border border-amber-600/40' :
+                          'text-slate-400'
+                        )}>
+                          {index + 1}
+                        </span>
                       </td>
                       <td className="p-4">
                         <Link to={`/profile/${player.id}`} className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
