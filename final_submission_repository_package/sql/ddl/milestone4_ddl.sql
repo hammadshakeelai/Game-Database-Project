@@ -198,7 +198,10 @@ CREATE TABLE game (
         status IN ('scheduled', 'in_progress', 'completed', 'abandoned')
     ),
     CONSTRAINT chk_game_spectator_count CHECK (spectator_count >= 0),
-    CONSTRAINT chk_game_time_order CHECK (end_time IS NULL OR end_time >= start_time)
+    CONSTRAINT chk_game_time_order CHECK (end_time IS NULL OR end_time >= start_time),
+    CONSTRAINT chk_game_completed_end_time CHECK (
+        status <> 'completed' OR end_time IS NOT NULL
+    )
 );
 
 -- ==========================================================
@@ -497,6 +500,7 @@ CREATE INDEX idx_player_is_active ON player(is_active);
 CREATE INDEX idx_tournament_struct_ID ON tournament(struct_ID);
 CREATE INDEX idx_tournament_game_type_ID ON tournament(game_type_ID);
 CREATE INDEX idx_tournament_organizer_PID ON tournament(organizer_PID);
+CREATE INDEX idx_tournament_name ON tournament(name);
 CREATE INDEX idx_tournament_status ON tournament(status);
 CREATE INDEX idx_tournament_scheduled_at ON tournament(scheduled_at);
 
@@ -510,6 +514,7 @@ CREATE INDEX idx_game_tournament_ID ON game(tournament_ID);
 CREATE INDEX idx_game_winner_PID ON game(winner_PID);
 CREATE INDEX idx_game_status ON game(status);
 CREATE INDEX idx_game_start_time ON game(start_time);
+CREATE INDEX idx_game_end_time ON game(end_time);
 
 -- game_player
 CREATE INDEX idx_game_player_PID ON game_player(PID);

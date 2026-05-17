@@ -5,56 +5,56 @@ Gaming / Tournament Platform Database
 
 ## 1NF - First Normal Form
 
-### Issue reviewed
-First Normal Form requires each table to store atomic values, with no repeating groups or multi-valued fields. The original design included fixed player columns in the game table, such as `P1_ID` and `P2_ID`, and a `moves` attribute that could contain multiple moves in one field.
+### Old problem
+The early design violated atomicity by storing repeating values in single rows:
+- `game` had fixed player columns (`P1_ID`, `P2_ID`) even though participation is a repeating set.
+- `game` had a `moves` field that stored multiple actions in one attribute.
 
-### Change made
-- Replaced `GAME.P1_ID` and `GAME.P2_ID` with the junction table `game_player`.
-- Replaced the multi-valued `GAME.moves` field with the table `game_move`.
+### Table change applied
+- Introduced `game_player (game_ID, PID, seat_no, score)` to model one player-per-game per row.
+- Introduced `game_move (move_ID, game_ID, actor_PID, move_no, move_notation, move_time)` to model one move-per-row.
 
-### Justification
-Each row now stores one fact. `game_player` stores one player per game per row, and `game_move` stores one move per row. This makes the schema atomic and flexible enough to support games with more than two participants.
+### Why the new design is better
+Each column now stores one atomic value and each row represents one fact. The model supports any number of participants and moves without schema changes.
 
 ## 2NF - Second Normal Form
 
-### Issue reviewed
-Second Normal Form requires every non-key attribute in a table with a composite primary key to depend on the whole key, not only part of it. This was reviewed for `participant`, `game_player`, `game_history`, `group_list`, and `friends`.
+### Old problem
+Composite-key tables are only in 2NF when every non-key attribute depends on the full composite key, not one part of it.
 
-### Change made
-- `participant` uses `(TID, PID)` as the composite primary key. Attributes such as `seed`, `enrolled_at`, `eliminated`, `final_rank`, and `prize_awarded` depend on the tournament-player pair.
-- `game_player` uses `(game_ID, PID)` as the composite primary key. Attributes such as `seat_no` and `score` depend on the game-player pair.
-- `game_history` uses `(PID, GAME_ID)` as the composite primary key. Attributes such as `result`, `elo_change`, `elo_before`, `elo_after`, and `play_duration_sec` depend on the player-game pair.
-- `group_list` uses `(GID, PID)` as the composite primary key. Attributes such as `role`, `joined_at`, and `invited_by` describe the specific group membership.
-- `friends` uses `(PID1, PID2)` as the composite primary key. Attributes such as `since`, `status`, and `requested_by` describe the relationship between the two players.
+### Table changes reviewed
+- `participant (TID, PID)`: `seed`, `enrolled_at`, `eliminated`, `final_rank`, `prize_awarded` depend on the tournament-player pair.
+- `game_player (game_ID, PID)`: `seat_no` and `score` depend on the game-player pair.
+- `game_history (PID, GAME_ID)`: result and Elo movement fields depend on the player-game pair.
+- `group_list (GID, PID)`: `role`, `joined_at`, `invited_by` depend on specific group membership.
+- `friends (PID1, PID2)`: `since`, `status`, `requested_by` depend on the relationship pair.
 
-### Justification
-No non-key attribute depends on only one part of a composite key. The non-key attributes describe the complete relationship represented by each composite key.
+### Why the new design is better
+No partial dependency remains. Attributes describe the whole relationship represented by each junction row, preventing partial-update anomalies.
 
 ## 3NF - Third Normal Form
 
-### Issue reviewed
-Third Normal Form requires non-key attributes to depend only on the key, not on other non-key attributes. It also removes derived data that can be calculated from transactional records. The original player table included derived totals such as wins, losses, and draws.
+### Old problem
+The initial player design included derived totals (`wins`, `losses`, `draws`), which creates transitive/derived redundancy and inconsistency risk.
 
-### Change made
-- Removed derived player totals from `player`.
-- Kept game outcome and Elo movement in `game_history`.
-- Kept tournament format details in `structure` instead of repeating them in `tournament`.
-- Kept game type details in `gametype` instead of repeating them in `game` or `tournament`.
-- Kept group membership details in `group_list` instead of repeating them in `player` or `group_t`.
+### Table change applied
+- Removed derived totals from `player`.
+- Kept match outcomes and Elo deltas in `game_history`.
+- Kept format/type metadata in lookup tables (`structure`, `gametype`) instead of repeating details in transaction tables.
 
-### Justification
-Derived values such as total wins, losses, and draws can be calculated from `game_history` using aggregate queries. Keeping game type, tournament structure, and membership facts in their own tables prevents update anomalies and keeps each fact stored in one place.
+### Why the new design is better
+Every non-key attribute depends directly on its key. Derived statistics are calculated from `game_history` when needed, so there is one source of truth and fewer update anomalies.
 
 ## Duplicate and Redundancy Review
 
-### Issue reviewed
-The schema was checked for repeated data, duplicate columns, and overlapping attributes.
+### Old problem
+Redundant patterns in the early schema caused repeated data and difficult updates.
 
-### Changes made
-- Removed fixed player columns from `game` and replaced them with `game_player`.
-- Removed multi-valued move storage from `game` and replaced it with `game_move`.
-- Removed derived player totals from `player`.
-- Used unique constraints for natural unique values such as `player.email`, `gametype.type_name`, and `group_t.group_name`.
+### Table change applied
+- Replaced fixed player columns in `game` with `game_player`.
+- Replaced multi-valued move storage with `game_move`.
+- Removed derived player totals.
+- Enforced uniqueness where needed (`player.email`, `gametype.type_name`, `group_t.group_name`).
 
 ### Final result
-The final schema satisfies 1NF, 2NF, and 3NF. Many-to-many relationships are resolved through junction tables, derived data is not stored as static columns, and the ERD matches the DDL scripts.
+The schema satisfies 1NF, 2NF, and 3NF. Many-to-many relationships are handled by junction tables, derived data is query-time computed, and naming aligns with the Milestone 4 DDL.

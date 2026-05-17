@@ -4,7 +4,7 @@
 #erd svg { min-width: 900px; }
 .mermaid-loading { color: var(--color-text-secondary); font-size: 13px; padding: 1rem; }
 </style>
-<h2 class="sr-only">Super Tic-Tac-Toe database entity relationship diagram showing 14 tables and their relationships</h2>
+<h2 class="sr-only">Super Tic-Tac-Toe database entity relationship diagram showing 16 tables and their relationships</h2>
 <div id="erd"><p class="mermaid-loading">Rendering schema…</p></div>
 <script type="module">
 import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -33,39 +33,46 @@ const diagram = `erDiagram
     text description
     int max_duration_sec
     boolean is_ranked
-    int board_size
+    varchar board_size
     datetime created_at
   }
   PLAYER {
     varchar PID PK
     varchar first_name
     varchar last_name
-    varchar Gmail
+    varchar email
     varchar password_hash
     int rank_elo
     varchar country
     varchar avatar_url
-    int total_wins
-    int total_losses
-    int total_draws
     datetime last_active
     datetime created_at
     boolean is_active
   }
   GAME {
-    varchar ID PK
-    varchar Game_type_ID FK
-    varchar Tournament_ID FK
-    varchar P1_ID FK
-    varchar P2_ID FK
+    varchar game_ID PK
+    varchar game_type_ID FK
+    varchar tournament_ID FK
+    varchar winner_PID FK
+    varchar arena
     datetime start_time
     datetime end_time
-    text moves
-    varchar Winner FK
-    varchar Arena
-    int points
     varchar status
     int spectator_count
+  }
+  GAME_PLAYER {
+    varchar game_ID PK
+    varchar PID PK
+    int seat_no
+    int score
+  }
+  GAME_MOVE {
+    varchar move_ID PK
+    varchar game_ID FK
+    varchar actor_PID FK
+    int move_no
+    varchar move_notation
+    datetime move_time
   }
   GAME_HISTORY {
     varchar PID PK
@@ -79,14 +86,14 @@ const diagram = `erDiagram
   TOURNAMENT {
     varchar TID PK
     varchar struct_ID FK
+    varchar game_type_ID FK
+    varchar organizer_PID FK
     varchar name
     varchar reward
-    datetime time
+    datetime scheduled_at
     int max_participants
     int entry_elo_min
     int entry_elo_max
-    varchar game_type_ID FK
-    varchar organizer_PID FK
     varchar status
   }
   STRUCTURE {
@@ -141,8 +148,8 @@ const diagram = `erDiagram
     varchar message_ID PK
     varchar CID FK
     varchar sender_PID FK
-    text text_additions
-    varchar media
+    text text_content
+    varchar media_url
     datetime sent_at
     boolean is_read
     varchar reply_to FK
@@ -167,11 +174,17 @@ const diagram = `erDiagram
   }
 
   GAMETYPE ||--o{ GAME : "defines variant"
+  GAME ||--o{ GAME_PLAYER : "has players"
+  PLAYER ||--o{ GAME_PLAYER : "plays in"
+  GAME ||--o{ GAME_MOVE : "has moves"
+  PLAYER ||--o{ GAME_MOVE : "acts in move"
   PLAYER ||--o{ GAME_HISTORY : "plays"
   GAME ||--o{ GAME_HISTORY : "recorded in"
   PLAYER ||--o{ PARTICIPANT : "enrolls in"
   TOURNAMENT ||--o{ PARTICIPANT : "has"
-  TOURNAMENT ||--|| STRUCTURE : "uses bracket"
+  STRUCTURE ||--o{ TOURNAMENT : "configures"
+  GAMETYPE ||--o{ TOURNAMENT : "applies to"
+  PLAYER ||--o{ TOURNAMENT : "organizes"
   TOURNAMENT ||--o{ GAME : "includes"
   PLAYER ||--o{ FRIENDS : "connects as PID1"
   PLAYER ||--o{ FRIENDS : "connects as PID2"

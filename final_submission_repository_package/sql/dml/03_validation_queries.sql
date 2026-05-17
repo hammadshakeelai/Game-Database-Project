@@ -174,3 +174,36 @@ WHERE p.PID IS NULL
 UNION ALL SELECT 'message.reply_to -> message.message_ID', COUNT(*)
 FROM message m LEFT JOIN message parent_msg ON m.reply_to = parent_msg.message_ID
 WHERE m.reply_to IS NOT NULL AND parent_msg.message_ID IS NULL;
+
+-- 4. Business-rule quality checks
+SELECT 'duplicate_player_email' AS check_name, COUNT(*) AS issue_count
+FROM (
+    SELECT email
+    FROM player
+    GROUP BY email
+    HAVING COUNT(*) > 1
+) dup_emails
+
+UNION ALL SELECT 'player_elo_out_of_range', COUNT(*)
+FROM player
+WHERE rank_elo NOT BETWEEN 0 AND 5000
+
+UNION ALL SELECT 'tournament_invalid_status', COUNT(*)
+FROM tournament
+WHERE status NOT IN ('scheduled', 'active', 'completed', 'cancelled')
+
+UNION ALL SELECT 'game_invalid_status', COUNT(*)
+FROM game
+WHERE status NOT IN ('scheduled', 'in_progress', 'completed', 'abandoned')
+
+UNION ALL SELECT 'friends_self_reference', COUNT(*)
+FROM friends
+WHERE PID1 = PID2
+
+UNION ALL SELECT 'duplicate_game_seat', COUNT(*)
+FROM (
+    SELECT game_ID, seat_no
+    FROM game_player
+    GROUP BY game_ID, seat_no
+    HAVING COUNT(*) > 1
+) dup_seats;
