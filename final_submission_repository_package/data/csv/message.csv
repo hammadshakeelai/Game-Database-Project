@@ -1,0 +1,101 @@
+message_ID,CID,sender_PID,text_content,media_url,sent_at,is_read,reply_to
+MSG0001,C001,P077,I joined the tournament lobby.,https://cdn.gamehub.example/messages/MSG0001.png,2026-03-23 13:52:21,TRUE,
+MSG0002,C001,P059,Let's practice before the next cup.,,2026-03-23 14:06:21,FALSE,
+MSG0003,C002,P068,Can you invite me to your group?,,2026-03-26 20:55:07,FALSE,
+MSG0004,C002,P082,"Good game, want a rematch?",,2026-03-26 22:22:07,TRUE,MSG0003
+MSG0005,C003,P062,I joined the tournament lobby.,,2025-10-17 17:04:25,TRUE,
+MSG0006,C003,P070,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0006.png,2025-10-17 17:21:25,FALSE,
+MSG0007,C004,P040,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0007.png,2025-12-28 14:06:04,TRUE,
+MSG0008,C004,P047,Can you invite me to your group?,,2025-12-28 14:21:04,TRUE,
+MSG0009,C005,P002,"Good game, want a rematch?",https://cdn.gamehub.example/messages/MSG0009.png,2026-02-09 17:44:39,TRUE,
+MSG0010,C005,P001,"Good game, want a rematch?",,2026-02-09 19:02:39,FALSE,MSG0009
+MSG0011,C006,P037,Can you invite me to your group?,,2026-02-14 07:33:59,TRUE,
+MSG0012,C006,P061,Can you invite me to your group?,,2026-02-14 08:36:59,TRUE,
+MSG0013,C007,P039,Can you invite me to your group?,,2026-05-14 22:30:06,FALSE,
+MSG0014,C007,P002,"Good game, want a rematch?",,2026-05-14 23:03:06,FALSE,MSG0013
+MSG0015,C008,P030,That endgame was close!,,2026-02-19 09:47:28,FALSE,
+MSG0016,C008,P001,Your opening strategy was strong.,https://cdn.gamehub.example/messages/MSG0016.png,2026-02-19 11:07:28,FALSE,
+MSG0017,C009,P072,Let's practice before the next cup.,,2025-12-21 19:26:21,FALSE,
+MSG0018,C009,P056,Can you invite me to your group?,,2025-12-21 20:45:21,TRUE,MSG0017
+MSG0019,C010,P095,Can you invite me to your group?,https://cdn.gamehub.example/messages/MSG0019.png,2025-12-19 20:34:02,FALSE,
+MSG0020,C010,P083,Let's practice before the next cup.,,2025-12-19 21:34:02,TRUE,
+MSG0021,C011,P034,Your opening strategy was strong.,,2026-01-01 11:38:22,TRUE,
+MSG0022,C011,P011,Your opening strategy was strong.,,2026-01-01 12:16:22,TRUE,
+MSG0023,C012,P098,"Good game, want a rematch?",,2026-04-16 23:55:44,FALSE,
+MSG0024,C012,P079,Can you invite me to your group?,,2026-04-17 01:18:44,TRUE,MSG0023
+MSG0025,C013,P084,Let's practice before the next cup.,,2026-02-13 02:09:47,FALSE,
+MSG0026,C013,P096,Your opening strategy was strong.,https://cdn.gamehub.example/messages/MSG0026.png,2026-02-13 02:50:47,TRUE,MSG0025
+MSG0027,C014,P025,Your opening strategy was strong.,,2025-09-30 08:14:29,TRUE,
+MSG0028,C014,P009,That endgame was close!,,2025-09-30 09:05:29,FALSE,MSG0027
+MSG0029,C015,P082,That endgame was close!,,2026-03-18 09:44:19,TRUE,
+MSG0030,C015,P059,Can you invite me to your group?,,2026-03-18 09:58:19,FALSE,MSG0029
+MSG0031,C016,P080,"Good game, want a rematch?",https://cdn.gamehub.example/messages/MSG0031.png,2025-10-02 10:24:28,FALSE,
+MSG0032,C016,P063,Let's practice before the next cup.,,2025-10-02 10:49:28,TRUE,
+MSG0033,C017,P007,Can you invite me to your group?,https://cdn.gamehub.example/messages/MSG0033.png,2025-07-30 02:21:29,FALSE,
+MSG0034,C017,P069,"Good game, want a rematch?",,2025-07-30 02:36:29,FALSE,MSG0033
+MSG0035,C018,P035,I joined the tournament lobby.,,2026-04-25 06:11:33,TRUE,
+MSG0036,C018,P017,I joined the tournament lobby.,,2026-04-25 07:54:33,FALSE,
+MSG0037,C019,P012,Can you invite me to your group?,,2025-07-27 05:19:43,TRUE,
+MSG0038,C019,P020,Let's practice before the next cup.,,2025-07-27 06:19:43,TRUE,MSG0037
+MSG0039,C020,P054,"Good game, want a rematch?",,2026-01-31 01:28:06,TRUE,
+MSG0040,C020,P040,Can you invite me to your group?,,2026-01-31 01:48:06,FALSE,MSG0039
+MSG0041,C021,P005,That endgame was close!,,2025-08-21 15:49:00,FALSE,
+MSG0042,C021,P043,Can you invite me to your group?,,2025-08-21 16:49:00,TRUE,
+MSG0043,C022,P035,That endgame was close!,,2025-12-20 21:43:09,TRUE,
+MSG0044,C022,P100,Your opening strategy was strong.,,2025-12-20 22:34:09,TRUE,MSG0043
+MSG0045,C023,P024,Let's practice before the next cup.,,2025-10-26 14:59:34,TRUE,
+MSG0046,C023,P025,Your opening strategy was strong.,,2025-10-26 16:32:34,TRUE,
+MSG0047,C024,P016,I joined the tournament lobby.,https://cdn.gamehub.example/messages/MSG0047.png,2026-04-25 01:24:26,FALSE,
+MSG0048,C024,P099,Can you invite me to your group?,,2026-04-25 01:39:26,TRUE,MSG0047
+MSG0049,C025,P032,Your opening strategy was strong.,,2025-08-03 12:25:18,TRUE,
+MSG0050,C025,P095,"Good game, want a rematch?",,2025-08-03 13:06:18,TRUE,
+MSG0051,C026,P099,Your opening strategy was strong.,,2026-02-08 21:27:07,TRUE,
+MSG0052,C026,P013,Your opening strategy was strong.,,2026-02-08 21:39:07,FALSE,MSG0051
+MSG0053,C027,P050,Can you invite me to your group?,,2025-11-19 17:09:12,FALSE,
+MSG0054,C027,P088,Can you invite me to your group?,,2025-11-19 18:52:12,TRUE,
+MSG0055,C028,P081,That endgame was close!,,2025-08-06 21:17:04,TRUE,
+MSG0056,C028,P094,Your opening strategy was strong.,,2025-08-06 22:03:04,TRUE,
+MSG0057,C029,P016,Can you invite me to your group?,,2026-01-24 09:28:05,TRUE,
+MSG0058,C029,P033,"Good game, want a rematch?",,2026-01-24 10:12:05,FALSE,
+MSG0059,C030,P047,"Good game, want a rematch?",,2026-04-06 10:07:44,FALSE,
+MSG0060,C030,P007,I joined the tournament lobby.,https://cdn.gamehub.example/messages/MSG0060.png,2026-04-06 11:22:44,TRUE,
+MSG0061,C031,P082,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0061.png,2025-11-24 12:46:05,TRUE,
+MSG0062,C031,P056,I joined the tournament lobby.,,2025-11-24 13:54:05,TRUE,MSG0061
+MSG0063,C032,P075,Can you invite me to your group?,,2025-12-22 05:17:02,FALSE,
+MSG0064,C032,P016,That endgame was close!,,2025-12-22 06:11:02,FALSE,MSG0063
+MSG0065,C033,P006,Your opening strategy was strong.,,2026-04-15 18:21:11,FALSE,
+MSG0066,C033,P075,"Good game, want a rematch?",,2026-04-15 19:20:11,TRUE,
+MSG0067,C034,P099,Your opening strategy was strong.,,2025-10-26 02:20:34,FALSE,
+MSG0068,C034,P012,That endgame was close!,,2025-10-26 04:03:34,FALSE,MSG0067
+MSG0069,C035,P088,That endgame was close!,,2025-11-29 22:24:21,TRUE,
+MSG0070,C035,P080,Let's practice before the next cup.,,2025-11-29 22:53:21,FALSE,
+MSG0071,C036,P046,Can you invite me to your group?,,2025-09-19 06:42:25,TRUE,
+MSG0072,C036,P083,I joined the tournament lobby.,,2025-09-19 08:06:25,TRUE,
+MSG0073,C037,P017,Your opening strategy was strong.,,2025-10-19 20:46:05,TRUE,
+MSG0074,C037,P063,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0074.png,2025-10-19 22:34:05,TRUE,
+MSG0075,C038,P097,Can you invite me to your group?,https://cdn.gamehub.example/messages/MSG0075.png,2026-01-07 21:14:23,TRUE,
+MSG0076,C038,P045,Can you invite me to your group?,,2026-01-07 22:56:23,TRUE,MSG0075
+MSG0077,C039,P089,I joined the tournament lobby.,,2025-12-07 14:26:46,FALSE,
+MSG0078,C039,P049,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0078.png,2025-12-07 15:14:46,FALSE,
+MSG0079,C040,P006,That endgame was close!,https://cdn.gamehub.example/messages/MSG0079.png,2026-04-21 22:18:53,TRUE,
+MSG0080,C040,P063,I joined the tournament lobby.,,2026-04-21 22:51:53,TRUE,
+MSG0081,C041,P070,Can you invite me to your group?,,2026-01-27 20:04:18,TRUE,
+MSG0082,C041,P090,Can you invite me to your group?,,2026-01-27 21:41:18,TRUE,MSG0081
+MSG0083,C042,P070,That endgame was close!,,2025-11-24 05:00:27,FALSE,
+MSG0084,C042,P045,That endgame was close!,,2025-11-24 05:33:27,FALSE,MSG0083
+MSG0085,C043,P077,I joined the tournament lobby.,,2025-09-21 18:35:32,TRUE,
+MSG0086,C043,P071,Let's practice before the next cup.,,2025-09-21 18:46:32,FALSE,
+MSG0087,C044,P058,I joined the tournament lobby.,,2025-10-31 18:40:35,TRUE,
+MSG0088,C044,P038,"Good game, want a rematch?",,2025-10-31 19:46:35,FALSE,
+MSG0089,C045,P001,Let's practice before the next cup.,https://cdn.gamehub.example/messages/MSG0089.png,2026-03-26 06:55:02,FALSE,
+MSG0090,C045,P100,"Good game, want a rematch?",,2026-03-26 08:50:02,FALSE,
+MSG0091,C046,P024,Let's practice before the next cup.,,2026-03-19 04:25:42,TRUE,
+MSG0092,C046,P003,Can you invite me to your group?,,2026-03-19 05:33:42,TRUE,
+MSG0093,C047,P031,I joined the tournament lobby.,,2026-04-27 12:19:25,TRUE,
+MSG0094,C047,P042,Can you invite me to your group?,,2026-04-27 14:06:25,TRUE,MSG0093
+MSG0095,C048,P025,Let's practice before the next cup.,,2026-04-12 20:11:39,FALSE,
+MSG0096,C048,P068,Let's practice before the next cup.,,2026-04-12 20:58:39,TRUE,
+MSG0097,C049,P079,I joined the tournament lobby.,,2025-11-23 18:56:01,FALSE,
+MSG0098,C049,P037,"Good game, want a rematch?",,2025-11-23 19:20:01,TRUE,
+MSG0099,C050,P013,That endgame was close!,,2026-04-03 09:23:34,FALSE,
+MSG0100,C050,P067,Your opening strategy was strong.,,2026-04-03 09:55:34,FALSE,
