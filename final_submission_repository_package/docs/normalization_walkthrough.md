@@ -58,3 +58,44 @@ The schema was checked for repeated data, duplicate columns, and overlapping att
 
 ### Final result
 The final schema satisfies 1NF, 2NF, and 3NF. Many-to-many relationships are resolved through junction tables, derived data is not stored as static columns, and the ERD matches the DDL scripts.
+
+---
+
+## Comprehensive Table-by-Table Normalization Review
+
+This section explicitly documents the normalization status of all 16 tables in the final schema.
+
+### Tables Requiring Normalization Changes (addressed above)
+
+| Table | 1NF Status | 2NF Status | 3NF Status | Action Taken |
+|-------|-----------|-----------|-----------|------------|
+| `game` | ❌ Violated (P1_ID, P2_ID fixed columns; moves CSV) | ✓ N/A | ✓ N/A | Removed P1_ID/P2_ID; replaced with `game_player`; replaced moves with `game_move` |
+| `participant` | ✓ Atomic | ❌ Violated (non-key attrs depend on full key) | ✓ Yes | All non-key attributes now depend on full (TID, PID) composite key |
+| `game_player` | ✓ Atomic | ❌ Violated (non-key attrs depend on full key) | ✓ Yes | All non-key attributes now depend on full (game_ID, PID) composite key |
+| `game_history` | ✓ Atomic | ❌ Violated (non-key attrs depend on full key) | ✓ Yes | All non-key attributes now depend on full (PID, GAME_ID) composite key |
+| `group_list` | ✓ Atomic | ❌ Violated (non-key attrs depend on full key) | ✓ Yes | All non-key attributes now depend on full (GID, PID) composite key |
+| `friends` | ✓ Atomic | ❌ Violated (non-key attrs depend on full key) | ✓ Yes | All non-key attributes now depend on full (PID1, PID2) composite key |
+| `player` | ✓ Atomic | ✓ Yes (single PK) | ❌ Violated (had derived wins/losses) | Removed derived totals; kept only independent attributes |
+
+### Tables Already in 3NF (no changes needed)
+
+| Table | Justification |
+|-------|-------------|
+| `gametype` | Single primary key (GT_ID). All attributes (type_name, description, max_duration_sec, is_ranked, board_size) depend only on GT_ID and do not depend on other non-key attributes. No derived data. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `structure` | Single primary key (struct_ID). All attributes (format_type, details, rounds, seeding_method) depend only on struct_ID. No derived data. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `tournament` | Single primary key (TID). All non-key attributes (struct_ID, game_type_ID, organizer_PID, name, reward, scheduled_at, max_participants, entry_elo_min, entry_elo_max, status) depend only on TID. Foreign key references point to independent lookup tables, not other non-key attributes. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `game` | Single primary key (game_ID). After removing P1_ID/P2_ID and moves, all attributes (game_type_ID, tournament_ID, winner_PID, arena, start_time, end_time, status, spectator_count) depend only on game_ID. No derived data. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `game_move` | Single primary key (move_ID). All attributes (game_ID, actor_PID, move_no, move_notation, move_time) depend only on move_ID. No derived data. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `group_t` | Single primary key (GID). All attributes (group_name, description, owner_PID, banner_url, max_members, created_at, is_public) depend only on GID. Owner_PID is an independent reference, not a derived value. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `chat` | Single primary key (CID). All attributes (PID1, PID2, created_at, last_message_at, is_archived) depend only on CID. Neither PID1 nor PID2 is derived; they identify the two participants in this conversation. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `message` | Single primary key (message_ID). All attributes (CID, sender_PID, text_content, media_url, sent_at, is_read, reply_to) depend only on message_ID. reply_to is an optional reference to another message, not a derived value. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `leaderboard` | Single primary key (LID). All attributes (PID, scope, scope_ref, rank_position, elo_snapshot, recorded_at) depend only on LID. Rank_position and elo_snapshot are snapshots in time, not derived totals; they represent facts at the moment of ranking calculation. ✓ 1NF ✓ 2NF ✓ 3NF |
+| `notification` | Single primary key (NID). All attributes (recipient_PID, type, ref_id, content, is_read, created_at) depend only on NID. No derived data. ✓ 1NF ✓ 2NF ✓ 3NF |
+
+### Summary
+
+**Total tables: 16**
+- **Tables with normalization changes: 7** (game, participant, game_player, game_history, group_list, friends, player)
+- **Tables already in 3NF (no changes needed): 9** (gametype, structure, tournament, game_move, group_t, chat, message, leaderboard, notification)
+
+All 16 tables satisfy 1NF, 2NF, and 3NF in the final schema. Changes were necessary only for tables that violated normal forms or contained derived data. All other tables were verified to require no changes.
