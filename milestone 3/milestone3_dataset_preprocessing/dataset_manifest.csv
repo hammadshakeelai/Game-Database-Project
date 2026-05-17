@@ -1,0 +1,17 @@
+table_name,csv_file,row_count,primary_key
+player,player.csv,100,PID
+gametype,gametype.csv,50,GT_ID
+structure,structure.csv,50,struct_ID
+tournament,tournament.csv,60,TID
+participant,participant.csv,100,TID + PID
+game,game.csv,50,game_ID
+game_player,game_player.csv,100,game_ID + PID
+game_move,game_move.csv,100,move_ID
+game_history,game_history.csv,100,PID + GAME_ID
+group_t,group_t.csv,50,GID
+group_list,group_list.csv,100,GID + PID
+friends,friends.csv,80,PID1 + PID2
+leaderboard,leaderboard.csv,100,LID
+notification,notification.csv,100,NID
+chat,chat.csv,50,CID
+message,message.csv,100,message_ID
