@@ -1,0 +1,563 @@
+erDiagram
+    PLAYER ||--|| PLAYER_PROFILE : "has profile"
+    PLAYER ||--o{ DEVICE : "uses"
+    PLAYER ||--o{ SESSION : "opens"
+    DEVICE ||--o{ SESSION : "creates"
+    GAME_TYPE ||--o{ GAME_SETTINGS : "defines"
+    GAME_TYPE ||--o{ GAME : "classifies"
+    ARENA ||--o{ GAME : "hosts"
+    PLAYER ||--o{ GAME : "plays as p1"
+    PLAYER ||--o{ GAME : "plays as p2"
+    PLAYER o|--o{ GAME : "wins"
+    GAME ||--o{ MOVE : "records"
+    PLAYER ||--o{ MOVE : "makes"
+    GAME ||--o{ GAME_RESULT : "produces"
+    PLAYER ||--o{ GAME_RESULT : "receives"
+    GAME ||--o| REPLAY : "has"
+    PLAYER ||--o{ GAME_HISTORY : "owns"
+    GAME ||--o{ GAME_HISTORY : "recorded in"
+    GAME_RESULT ||--o| GAME_HISTORY : "summarized by"
+    GAME_TYPE ||--o{ TOURNAMENT : "used by"
+    PLAYER ||--o{ TOURNAMENT : "owns"
+    TOURNAMENT_STRUCTURE ||--o{ TOURNAMENT : "structures"
+    TOURNAMENT ||--o{ TOURNAMENT_RULE : "has"
+    TOURNAMENT ||--o{ PARTICIPANT : "enrolls"
+    PLAYER ||--o{ PARTICIPANT : "registers as"
+    TEAM o|--o{ PARTICIPANT : "registers as"
+    TOURNAMENT ||--o{ ROUND : "contains"
+    ROUND ||--o{ MATCH : "schedules"
+    TOURNAMENT ||--o{ MATCH : "has"
+    GAME o|--|| MATCH : "played for"
+    TOURNAMENT ||--o{ BRACKET_SEED : "seeds"
+    PARTICIPANT ||--o| BRACKET_SEED : "assigned"
+    TOURNAMENT ||--o{ PRIZE : "offers"
+    PRIZE ||--o{ REWARD_PAYOUT : "paid as"
+    PLAYER ||--o{ REWARD_PAYOUT : "receives"
+    TOURNAMENT ||--o{ REWARD_PAYOUT : "tracks"
+    PLAYER ||--o{ TEAM : "captains"
+    TEAM ||--o{ TEAM_MEMBER : "contains"
+    PLAYER ||--o{ TEAM_MEMBER : "joins"
+    PLAYER ||--o{ GROUP : "owns"
+    GROUP ||--o{ GROUP_MEMBER : "contains"
+    PLAYER ||--o{ GROUP_MEMBER : "member of"
+    GROUP o|--o{ CHAT : "starts"
+    TOURNAMENT o|--o{ CHAT : "uses"
+    GAME o|--o{ CHAT : "uses"
+    PLAYER ||--o{ CHAT : "creates"
+    CHAT ||--o{ CHAT_PARTICIPANT : "includes"
+    PLAYER ||--o{ CHAT_PARTICIPANT : "participates"
+    CHAT ||--o{ CHAT_MESSAGE : "contains"
+    PLAYER ||--o{ CHAT_MESSAGE : "sends"
+    CHAT_MESSAGE o|--o{ CHAT_MESSAGE : "replies"
+    CHAT_MESSAGE ||--o{ MESSAGE_ATTACHMENT : "attaches"
+    PLAYER ||--o{ FRIENDSHIP : "has"
+    PLAYER ||--o{ FRIEND_REQUEST : "sends"
+    PLAYER ||--o{ FRIEND_REQUEST : "receives"
+    PLAYER ||--o{ INVITE : "sends"
+    PLAYER ||--o{ INVITE : "receives"
+    GROUP o|--o{ INVITE : "invite target"
+    TOURNAMENT o|--o{ INVITE : "invite target"
+    GAME o|--o{ INVITE : "invite target"
+    PLAYER ||--o{ NOTIFICATION : "receives"
+    PLAYER o|--o{ NOTIFICATION : "triggers"
+    ACHIEVEMENT ||--o{ PLAYER_ACHIEVEMENT : "unlocked by"
+    PLAYER ||--o{ PLAYER_ACHIEVEMENT : "earns"
+    GAME_TYPE o|--o{ LEADERBOARD : "scopes"
+    TOURNAMENT o|--o{ LEADERBOARD : "scopes"
+    LEADERBOARD ||--o{ LEADERBOARD_ENTRY : "ranks"
+    PLAYER ||--o{ LEADERBOARD_ENTRY : "appears in"
+    PLAYER ||--o{ RATING_HISTORY : "has"
+    GAME_TYPE ||--o{ RATING_HISTORY : "rates"
+    GAME o|--o{ RATING_HISTORY : "causes"
+    PLAYER ||--o{ REPORT : "files"
+    PLAYER ||--o{ REPORT : "reported in"
+    GAME o|--o{ REPORT : "evidence"
+    CHAT_MESSAGE o|--o{ REPORT : "evidence"
+    REPORT ||--o{ MODERATION_ACTION : "results in"
+    PLAYER ||--o{ MODERATION_ACTION : "moderates"
+    PLAYER ||--o{ MODERATION_ACTION : "targeted"
+    PLAYER o|--o{ AUDIT_LOG : "creates"
+
+    PLAYER {
+        uuid player_id PK
+        string username UK
+        string first_name
+        string last_name
+        string email UK
+        string password_hash
+        string avatar_url
+        string country
+        string timezone
+        date date_of_birth
+        int rank_elo
+        string rank_tier
+        boolean is_verified
+        boolean is_banned
+        datetime created_at
+        datetime last_login_at
+        string status
+    }
+
+    PLAYER_PROFILE {
+        uuid profile_id PK
+        uuid player_id FK
+        string display_name
+        text bio
+        string preferred_language
+        int total_games
+        int total_wins
+        int total_losses
+        decimal win_rate
+        int total_points
+        uuid favorite_game_type_id FK
+        json settings_json
+        datetime updated_at
+    }
+
+    DEVICE {
+        uuid device_id PK
+        uuid player_id FK
+        string platform
+        string device_name
+        string push_token
+        string last_ip
+        datetime last_seen_at
+        boolean is_active
+    }
+
+    SESSION {
+        uuid session_id PK
+        uuid player_id FK
+        uuid device_id FK
+        string refresh_token_hash
+        string ip_address
+        string user_agent
+        datetime created_at
+        datetime expires_at
+        datetime revoked_at
+    }
+
+    GAME_TYPE {
+        uuid game_type_id PK
+        string name UK
+        string category
+        int min_players
+        int max_players
+        int default_points
+        string time_control
+        string rules_url
+        boolean is_ranked
+        string status
+    }
+
+    GAME_SETTINGS {
+        uuid settings_id PK
+        uuid game_type_id FK
+        string board_size
+        int max_rounds
+        int move_timer_seconds
+        boolean allow_chat
+        boolean allow_spectators
+        decimal ranked_modifier
+        json rules_json
+    }
+
+    ARENA {
+        uuid arena_id PK
+        string name UK
+        string theme
+        int max_capacity
+        string region
+        string server_url
+        boolean is_active
+    }
+
+    GAME {
+        uuid game_id PK
+        uuid game_type_id FK
+        uuid arena_id FK
+        uuid p1_id FK
+        uuid p2_id FK
+        uuid winner_player_id FK
+        datetime started_at
+        datetime ended_at
+        string status
+        text moves_csv
+        int move_count
+        int points
+        string replay_url
+        datetime created_at
+    }
+
+    MOVE {
+        uuid move_id PK
+        uuid game_id FK
+        uuid player_id FK
+        int move_number
+        string notation
+        json payload_json
+        int time_remaining_ms
+        int client_latency_ms
+        datetime created_at
+    }
+
+    GAME_RESULT {
+        uuid result_id PK
+        uuid game_id FK
+        uuid player_id FK
+        uuid opponent_id FK
+        string outcome
+        int elo_before
+        int elo_after
+        int elo_delta
+        int points_awarded
+        int streak_after
+        datetime recorded_at
+    }
+
+    GAME_HISTORY {
+        uuid history_id PK
+        uuid player_id FK
+        uuid game_id FK
+        uuid result_id FK
+        uuid tournament_id FK
+        uuid round_id FK
+        int points
+        datetime archived_at
+    }
+
+    REPLAY {
+        uuid replay_id PK
+        uuid game_id FK
+        string storage_url
+        string checksum
+        int duration_seconds
+        int file_size_bytes
+        datetime created_at
+    }
+
+    TOURNAMENT {
+        uuid tournament_id PK
+        uuid game_type_id FK
+        uuid owner_player_id FK
+        uuid structure_id FK
+        string title
+        text description
+        decimal reward_pool
+        decimal entry_fee
+        int max_participants
+        datetime registration_opens_at
+        datetime registration_closes_at
+        datetime starts_at
+        datetime ends_at
+        string status
+    }
+
+    TOURNAMENT_STRUCTURE {
+        uuid structure_id PK
+        string name
+        string format
+        string bracket_type
+        string elimination_type
+        int rounds_count
+        int best_of
+        json details_json
+        datetime created_at
+    }
+
+    TOURNAMENT_RULE {
+        uuid rule_id PK
+        uuid tournament_id FK
+        string rule_key
+        string rule_value
+        datetime created_at
+    }
+
+    PARTICIPANT {
+        uuid participant_id PK
+        uuid tournament_id FK
+        uuid player_id FK
+        uuid team_id FK
+        int seed_number
+        datetime checked_in_at
+        string registration_status
+        datetime joined_at
+        datetime dropped_at
+    }
+
+    ROUND {
+        uuid round_id PK
+        uuid tournament_id FK
+        int round_number
+        string name
+        datetime starts_at
+        datetime ends_at
+        string status
+    }
+
+    MATCH {
+        uuid match_id PK
+        uuid tournament_id FK
+        uuid round_id FK
+        uuid game_id FK
+        int bracket_position
+        datetime scheduled_at
+        datetime started_at
+        datetime ended_at
+        string status
+        uuid next_match_id FK
+        uuid loser_next_match_id FK
+    }
+
+    BRACKET_SEED {
+        uuid seed_id PK
+        uuid tournament_id FK
+        uuid participant_id FK
+        int seed_number
+        string bracket_side
+        datetime locked_at
+    }
+
+    PRIZE {
+        uuid prize_id PK
+        uuid tournament_id FK
+        int placement
+        string reward_type
+        decimal reward_amount
+        string currency
+        text description
+    }
+
+    REWARD_PAYOUT {
+        uuid payout_id PK
+        uuid prize_id FK
+        uuid tournament_id FK
+        uuid player_id FK
+        string status
+        datetime paid_at
+        string transaction_ref
+    }
+
+    TEAM {
+        uuid team_id PK
+        uuid captain_player_id FK
+        string name UK
+        string tag UK
+        string logo_url
+        string region
+        int rating
+        datetime created_at
+        string status
+    }
+
+    TEAM_MEMBER {
+        uuid team_member_id PK
+        uuid team_id FK
+        uuid player_id FK
+        string role
+        datetime joined_at
+        datetime left_at
+        boolean is_active
+    }
+
+    GROUP {
+        uuid group_id PK
+        uuid owner_player_id FK
+        string name
+        text description
+        string visibility
+        datetime created_at
+        datetime updated_at
+    }
+
+    GROUP_MEMBER {
+        uuid group_member_id PK
+        uuid group_id FK
+        uuid player_id FK
+        string role
+        datetime joined_at
+        datetime muted_until
+        string status
+    }
+
+    CHAT {
+        uuid chat_id PK
+        uuid group_id FK
+        uuid tournament_id FK
+        uuid game_id FK
+        uuid created_by_player_id FK
+        string chat_type
+        string title
+        datetime created_at
+        datetime last_message_at
+    }
+
+    CHAT_PARTICIPANT {
+        uuid chat_participant_id PK
+        uuid chat_id FK
+        uuid player_id FK
+        string role
+        datetime joined_at
+        datetime last_read_at
+        datetime muted_until
+    }
+
+    CHAT_MESSAGE {
+        uuid message_id PK
+        uuid chat_id FK
+        uuid sender_player_id FK
+        uuid parent_message_id FK
+        text body
+        string media_url
+        string message_type
+        datetime edited_at
+        datetime deleted_at
+        datetime created_at
+    }
+
+    MESSAGE_ATTACHMENT {
+        uuid attachment_id PK
+        uuid message_id FK
+        string file_name
+        string mime_type
+        string file_url
+        int size_bytes
+        datetime uploaded_at
+    }
+
+    FRIENDSHIP {
+        uuid friendship_id PK
+        uuid player_id FK
+        uuid friend_player_id FK
+        string status
+        datetime created_at
+        datetime accepted_at
+        datetime blocked_at
+    }
+
+    FRIEND_REQUEST {
+        uuid request_id PK
+        uuid requester_player_id FK
+        uuid receiver_player_id FK
+        text message
+        string status
+        datetime sent_at
+        datetime responded_at
+    }
+
+    INVITE {
+        uuid invite_id PK
+        uuid sender_player_id FK
+        uuid receiver_player_id FK
+        uuid group_id FK
+        uuid tournament_id FK
+        uuid game_id FK
+        string invite_type
+        string status
+        datetime sent_at
+        datetime expires_at
+    }
+
+    NOTIFICATION {
+        uuid notification_id PK
+        uuid player_id FK
+        uuid actor_player_id FK
+        string notification_type
+        string title
+        text body
+        string entity_type
+        uuid entity_id
+        datetime read_at
+        datetime created_at
+    }
+
+    ACHIEVEMENT {
+        uuid achievement_id PK
+        string code UK
+        string name
+        text description
+        int points
+        string badge_url
+        json criteria_json
+        datetime created_at
+    }
+
+    PLAYER_ACHIEVEMENT {
+        uuid player_achievement_id PK
+        uuid player_id FK
+        uuid achievement_id FK
+        decimal progress_value
+        datetime earned_at
+        boolean is_featured
+    }
+
+    LEADERBOARD {
+        uuid leaderboard_id PK
+        uuid game_type_id FK
+        uuid tournament_id FK
+        string name
+        string scope
+        string season
+        datetime starts_at
+        datetime ends_at
+        datetime created_at
+    }
+
+    LEADERBOARD_ENTRY {
+        uuid entry_id PK
+        uuid leaderboard_id FK
+        uuid player_id FK
+        int rank_position
+        int elo_score
+        int points
+        int wins
+        int losses
+        datetime last_updated_at
+    }
+
+    RATING_HISTORY {
+        uuid rating_history_id PK
+        uuid player_id FK
+        uuid game_type_id FK
+        uuid game_id FK
+        int rating_before
+        int rating_after
+        string change_reason
+        datetime created_at
+    }
+
+    REPORT {
+        uuid report_id PK
+        uuid reporter_player_id FK
+        uuid reported_player_id FK
+        uuid game_id FK
+        uuid message_id FK
+        string reason
+        text details
+        string status
+        datetime created_at
+        datetime resolved_at
+    }
+
+    MODERATION_ACTION {
+        uuid action_id PK
+        uuid report_id FK
+        uuid moderator_player_id FK
+        uuid target_player_id FK
+        string action_type
+        int duration_hours
+        text notes
+        datetime created_at
+    }
+
+    AUDIT_LOG {
+        uuid audit_id PK
+        uuid actor_player_id FK
+        string action
+        string entity_type
+        uuid entity_id
+        json old_values_json
+        json new_values_json
+        string ip_address
+        datetime created_at
+    }
