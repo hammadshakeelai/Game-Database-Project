@@ -1,0 +1,51 @@
+struct_ID,format_type,details,rounds,seeding_method
+S001,round_robin,Round Robin tournament with 11 rounds.,11,balanced
+S002,single_elimination,Single Elimination tournament with 10 rounds.,10,balanced
+S003,double_elimination,Double Elimination tournament with 12 rounds.,12,random
+S004,ladder,Ladder tournament with 11 rounds.,11,manual
+S005,swiss,Swiss tournament with 3 rounds.,3,random
+S006,swiss,Swiss tournament with 9 rounds.,9,regional
+S007,ladder,Ladder tournament with 4 rounds.,4,regional
+S008,ladder,Ladder tournament with 10 rounds.,10,random
+S009,single_elimination,Single Elimination tournament with 8 rounds.,8,balanced
+S010,double_elimination,Double Elimination tournament with 4 rounds.,4,elo_based
+S011,round_robin,Round Robin tournament with 12 rounds.,12,balanced
+S012,league,League tournament with 8 rounds.,8,regional
+S013,league,League tournament with 11 rounds.,11,manual
+S014,swiss,Swiss tournament with 11 rounds.,11,balanced
+S015,swiss,Swiss tournament with 4 rounds.,4,random
+S016,ladder,Ladder tournament with 11 rounds.,11,elo_based
+S017,swiss,Swiss tournament with 10 rounds.,10,elo_based
+S018,swiss,Swiss tournament with 8 rounds.,8,regional
+S019,swiss,Swiss tournament with 9 rounds.,9,random
+S020,round_robin,Round Robin tournament with 9 rounds.,9,manual
+S021,ladder,Ladder tournament with 7 rounds.,7,manual
+S022,double_elimination,Double Elimination tournament with 10 rounds.,10,random
+S023,single_elimination,Single Elimination tournament with 4 rounds.,4,random
+S024,swiss,Swiss tournament with 4 rounds.,4,manual
+S025,double_elimination,Double Elimination tournament with 11 rounds.,11,random
+S026,league,League tournament with 11 rounds.,11,balanced
+S027,round_robin,Round Robin tournament with 4 rounds.,4,regional
+S028,round_robin,Round Robin tournament with 9 rounds.,9,random
+S029,round_robin,Round Robin tournament with 12 rounds.,12,manual
+S030,round_robin,Round Robin tournament with 4 rounds.,4,balanced
+S031,league,League tournament with 6 rounds.,6,elo_based
+S032,ladder,Ladder tournament with 10 rounds.,10,elo_based
+S033,single_elimination,Single Elimination tournament with 8 rounds.,8,balanced
+S034,round_robin,Round Robin tournament with 4 rounds.,4,manual
+S035,league,League tournament with 6 rounds.,6,regional
+S036,league,League tournament with 12 rounds.,12,balanced
+S037,ladder,Ladder tournament with 11 rounds.,11,random
+S038,league,League tournament with 7 rounds.,7,random
+S039,double_elimination,Double Elimination tournament with 7 rounds.,7,manual
+S040,round_robin,Round Robin tournament with 8 rounds.,8,random
+S041,double_elimination,Double Elimination tournament with 5 rounds.,5,balanced
+S042,ladder,Ladder tournament with 9 rounds.,9,random
+S043,double_elimination,Double Elimination tournament with 3 rounds.,3,random
+S044,ladder,Ladder tournament with 11 rounds.,11,elo_based
+S045,swiss,Swiss tournament with 9 rounds.,9,regional
+S046,round_robin,Round Robin tournament with 5 rounds.,5,manual
+S047,round_robin,Round Robin tournament with 8 rounds.,8,balanced
+S048,league,League tournament with 4 rounds.,4,random
+S049,double_elimination,Double Elimination tournament with 5 rounds.,5,balanced
+S050,single_elimination,Single Elimination tournament with 4 rounds.,4,manual
