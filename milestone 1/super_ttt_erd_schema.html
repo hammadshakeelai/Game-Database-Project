@@ -1,0 +1,213 @@
+
+<style>
+#erd { width: 100%; overflow-x: auto; }
+#erd svg { min-width: 900px; }
+.mermaid-loading { color: var(--color-text-secondary); font-size: 13px; padding: 1rem; }
+</style>
+<h2 class="sr-only">Super Tic-Tac-Toe database entity relationship diagram showing 14 tables and their relationships</h2>
+<div id="erd"><p class="mermaid-loading">Rendering schema…</p></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a28' : '#f0eeea',
+    primaryBorderColor: dark ? '#5a5850' : '#c0bdb5',
+    primaryTextColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+
+const diagram = `erDiagram
+  GAMETYPE {
+    varchar GT_ID PK
+    varchar type_name
+    text description
+    int max_duration_sec
+    boolean is_ranked
+    int board_size
+    datetime created_at
+  }
+  PLAYER {
+    varchar PID PK
+    varchar first_name
+    varchar last_name
+    varchar Gmail
+    varchar password_hash
+    int rank_elo
+    varchar country
+    varchar avatar_url
+    int total_wins
+    int total_losses
+    int total_draws
+    datetime last_active
+    datetime created_at
+    boolean is_active
+  }
+  GAME {
+    varchar ID PK
+    varchar Game_type_ID FK
+    varchar Tournament_ID FK
+    varchar P1_ID FK
+    varchar P2_ID FK
+    datetime start_time
+    datetime end_time
+    text moves
+    varchar Winner FK
+    varchar Arena
+    int points
+    varchar status
+    int spectator_count
+  }
+  GAME_HISTORY {
+    varchar PID PK
+    varchar GAME_ID PK
+    varchar result
+    int elo_change
+    int elo_before
+    int elo_after
+    int play_duration_sec
+  }
+  TOURNAMENT {
+    varchar TID PK
+    varchar struct_ID FK
+    varchar name
+    varchar reward
+    datetime time
+    int max_participants
+    int entry_elo_min
+    int entry_elo_max
+    varchar game_type_ID FK
+    varchar organizer_PID FK
+    varchar status
+  }
+  STRUCTURE {
+    varchar struct_ID PK
+    varchar format_type
+    text details
+    int rounds
+    varchar seeding_method
+  }
+  PARTICIPANT {
+    varchar TID PK
+    varchar PID PK
+    int seed
+    datetime enrolled_at
+    boolean eliminated
+    int final_rank
+    varchar prize_awarded
+  }
+  FRIENDS {
+    varchar PID1 PK
+    varchar PID2 PK
+    datetime since
+    varchar status
+    varchar requested_by
+  }
+  GROUP_T {
+    varchar GID PK
+    varchar group_name
+    text description
+    varchar owner_PID FK
+    varchar banner_url
+    int max_members
+    datetime created_at
+    boolean is_public
+  }
+  GROUP_LIST {
+    varchar GID PK
+    varchar PID PK
+    varchar role
+    datetime joined_at
+    varchar invited_by FK
+  }
+  CHAT {
+    varchar CID PK
+    varchar PID1 FK
+    varchar PID2 FK
+    datetime created_at
+    datetime last_message_at
+    boolean is_archived
+  }
+  MESSAGE {
+    varchar message_ID PK
+    varchar CID FK
+    varchar sender_PID FK
+    text text_additions
+    varchar media
+    datetime sent_at
+    boolean is_read
+    varchar reply_to FK
+  }
+  LEADERBOARD {
+    varchar LID PK
+    varchar PID FK
+    varchar scope
+    varchar scope_ref
+    int rank_position
+    int elo_snapshot
+    datetime recorded_at
+  }
+  NOTIFICATION {
+    varchar NID PK
+    varchar recipient_PID FK
+    varchar type
+    varchar ref_id
+    text content
+    boolean is_read
+    datetime created_at
+  }
+
+  GAMETYPE ||--o{ GAME : "defines variant"
+  PLAYER ||--o{ GAME_HISTORY : "plays"
+  GAME ||--o{ GAME_HISTORY : "recorded in"
+  PLAYER ||--o{ PARTICIPANT : "enrolls in"
+  TOURNAMENT ||--o{ PARTICIPANT : "has"
+  TOURNAMENT ||--|| STRUCTURE : "uses bracket"
+  TOURNAMENT ||--o{ GAME : "includes"
+  PLAYER ||--o{ FRIENDS : "connects as PID1"
+  PLAYER ||--o{ FRIENDS : "connects as PID2"
+  PLAYER ||--o{ GROUP_LIST : "member of"
+  GROUP_T ||--o{ GROUP_LIST : "has members"
+  PLAYER ||--o{ CHAT : "initiates"
+  CHAT ||--o{ MESSAGE : "contains"
+  PLAYER ||--o{ MESSAGE : "sends"
+  PLAYER ||--o{ LEADERBOARD : "ranked in"
+  PLAYER ||--o{ NOTIFICATION : "receives"
+`;
+
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
