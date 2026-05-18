@@ -38,7 +38,7 @@ const KEY_GROUPS      = 'sttt_groups';
 const KEY_GROUP_LIST  = 'sttt_group_list';
 const KEY_NOTIFS      = 'sttt_notifications';
 const KEY_USERS       = 'sttt_users';
-const SEED_FLAG       = 'sttt_seeded_m5';
+const SEED_FLAG       = 'sttt_seeded_m7';
 
 // ────────────────────────────────────────────────────────────
 // Generic helpers
@@ -620,9 +620,20 @@ export function seedDefaults(): void {
     { uid: 'P090', email: 'james.carter90@example.com',      passwordHash: 'demo', profile: { username: 'James Carter',       email: 'james.carter90@example.com',      elo_rating: 1699, avg_accuracy: 0, matches_played: 0, wins: 0, losses: 0, draws: 0, created_at: Date.parse('2025-02-10T10:17:59Z') } },
     { uid: 'P093', email: 'evelyn.king93@example.com',       passwordHash: 'demo', profile: { username: 'Evelyn King',        email: 'evelyn.king93@example.com',       elo_rating: 1369, avg_accuracy: 0, matches_played: 0, wins: 0, losses: 0, draws: 0, created_at: Date.parse('2024-07-17T17:58:21Z') } },
   ].filter(p => !knownUids.has(p.uid));
+
+  // Give every demo player believable stats so the leaderboard / their
+  // profile pages don't look empty.
+  enrichDummyStats(demoPlayers);
+
   if (demoPlayers.length > 0) {
     writeArray(KEY_USERS, [...existingUsers, ...demoPlayers]);
   }
+
+  // Generate per-dummy match history so visiting a demo player's profile
+  // shows real-looking games. We pool all demo players (already seeded
+  // and newly seeded) so opponents are drawn from the full roster.
+  const allDemo = readArray<StoredUserBlob>(KEY_USERS).filter(u => /^P\d/.test(u.uid));
+  seedDummyHistories(allDemo);
 
   // ── Milestone 5: Sample tournaments (15 non-cancelled from tournament.csv) ─
   if (listTournaments().length === 0) {
@@ -698,6 +709,82 @@ export function seedDefaults(): void {
   }
 
   localStorage.setItem(SEED_FLAG, '1');
+}
+
+// ────────────────────────────────────────────────────────────
+// Demo-player stat & history generation helpers
+// ────────────────────────────────────────────────────────────
+
+/**
+ * Mutate each demo player's profile so they have a believable record:
+ * matches played, wins/losses/draws, and an average accuracy roughly
+ * proportional to their Elo bucket.
+ */
+function enrichDummyStats(users: StoredUserBlob[]): void {
+  for (const u of users) {
+    if (!u.profile) continue;
+    const elo = u.profile.elo_rating;
+    const skill = Math.max(0, Math.min(1, (elo - 800) / 1550));
+    const matches = 40 + Math.floor(Math.random() * 240);
+    const drawRate = 0.05 + Math.random() * 0.03;
+    const draws = Math.round(matches * drawRate);
+    const winRate = Math.max(0.30, Math.min(0.85, 0.30 + skill * 0.50));
+    const wins = Math.round((matches - draws) * winRate);
+    u.profile.matches_played = matches;
+    u.profile.wins = wins;
+    u.profile.draws = draws;
+    u.profile.losses = matches - wins - draws;
+    u.profile.avg_accuracy = Math.max(30, Math.min(95,
+      Math.round(35 + skill * 48 + (Math.random() * 8 - 4)),
+    ));
+  }
+}
+
+/**
+ * For each demo player, write a fake match history to
+ * `match_history_<uid>` so their profile page has real-looking games.
+ * Opponents are drawn from the supplied pool of demo players.
+ */
+function seedDummyHistories(pool: StoredUserBlob[]): void {
+  if (pool.length < 2) return;
+  const day = 86_400_000;
+  for (const u of pool) {
+    if (!u.profile) continue;
+    const existing = localStorage.getItem(`match_history_${u.uid}`);
+    if (existing) continue; // don't clobber any real history
+    const skill = Math.max(0, Math.min(1, (u.profile.elo_rating - 800) / 1550));
+    const winRate = Math.max(0.30, Math.min(0.85, 0.30 + skill * 0.50));
+    const drawRate = 0.06;
+    const n = 15 + Math.floor(Math.random() * 11);
+    const records: Array<Record<string, unknown>> = [];
+    for (let i = 0; i < n; i++) {
+      let opp = pool[Math.floor(Math.random() * pool.length)];
+      let guard = 0;
+      while ((!opp || opp.uid === u.uid || !opp.profile) && guard < 5) {
+        opp = pool[Math.floor(Math.random() * pool.length)];
+        guard++;
+      }
+      if (!opp || opp.uid === u.uid || !opp.profile) continue;
+      const r = Math.random();
+      const winner = r < drawRate ? 'Draw' : (r < drawRate + (1 - drawRate) * winRate ? 'X' : 'O');
+      records.push({
+        id: `seed_${u.uid}_${i}`,
+        player_x: u.uid,
+        player_o: opp.uid,
+        player_x_name: u.profile.username,
+        player_o_name: opp.profile.username,
+        winner,
+        status: 'completed',
+        moves_count: 14 + Math.floor(Math.random() * 47),
+        created_at: Date.now() - Math.floor(Math.random() * 120 + 1) * day,
+        isBotMatch: false,
+      });
+    }
+    records.sort((a, b) => (b.created_at as number) - (a.created_at as number));
+    try {
+      localStorage.setItem(`match_history_${u.uid}`, JSON.stringify(records));
+    } catch { /* quota — ignore */ }
+  }
 }
 
 // ────────────────────────────────────────────────────────────

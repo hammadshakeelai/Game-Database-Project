@@ -15,7 +15,7 @@ import {
   TOURNAMENT_STATUS_COLORS,
 } from '../stores';
 import type { Tournament, TournamentStatus } from '../types';
-import { cn, formatDate } from '../utils';
+import { cn, formatDate, tournamentRunningLabel } from '../utils';
 
 const STATUS_FILTERS: ({ key: 'all' | TournamentStatus; label: string })[] = [
   { key: 'all',       label: 'All' },
@@ -36,7 +36,7 @@ export default function TournamentsPage() {
   }, []);
 
   const tournaments = useMemo(() => listTournaments(), [tick]);
-  const [filter, setFilter] = useState<'all' | TournamentStatus>('all');
+  const [filter, setFilter] = useState<'all' | TournamentStatus>('active');
   const [showCreate, setShowCreate] = useState(false);
 
   const filtered = filter === 'all' ? tournaments : tournaments.filter(t => t.status === filter);
@@ -111,8 +111,18 @@ function TournamentCard({ t, me }: { t: Tournament; me: string }) {
         </span>
       </div>
 
+      <div className={cn(
+        'text-xs font-bold px-2.5 py-1 rounded-md border self-start',
+        t.status === 'active'    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 animate-pulse' :
+        t.status === 'scheduled' ? 'bg-sky-500/15 text-sky-300 border-sky-500/40' :
+        t.status === 'completed' ? 'bg-slate-600/30 text-slate-300 border-slate-500/40' :
+                                    'bg-red-500/15 text-red-300 border-red-500/40'
+      )}>
+        {tournamentRunningLabel(t.status, t.scheduled_at)}
+      </div>
+
       {t.reward && (
-        <p className="text-xs text-amber-500 font-semibold">Prize: {t.reward}</p>
+        <p className="text-xs text-amber-400 font-semibold">Prize: {t.reward}</p>
       )}
 
       <dl className="text-xs text-slate-400 space-y-1.5">
@@ -120,7 +130,7 @@ function TournamentCard({ t, me }: { t: Tournament; me: string }) {
         <Row label="Game" value={gameType?.type_name ?? '—'} />
         <Row label="Field" value={`${filled} / ${t.max_participants}`} />
         <Row label="Elo" value={`${t.entry_elo_min}–${t.entry_elo_max}`} />
-        <Row label="Starts" value={formatDate(t.scheduled_at)} />
+        <Row label="Scheduled" value={formatDate(t.scheduled_at)} />
       </dl>
 
       <div className="mt-auto pt-2 flex gap-2">

@@ -65,6 +65,11 @@ export interface MatchDetails {
   isBotMatch: boolean;
   moves_count: number;
   botDifficulty?: number;
+  /** True when the opponent is a seeded dummy player driving a bot under the hood,
+   *  but the match should otherwise be treated as PvP for stat tracking. */
+  isDummyOpponent?: boolean;
+  /** UID of the seeded dummy when isDummyOpponent is true. */
+  dummyUid?: string;
 }
 
 export interface ClientToServerEvents {
@@ -87,10 +92,20 @@ export interface ClientToServerEvents {
     message: string;
     timestamp: number;
   }) => void;
+  /** Quick Match: enter the matchmaking queue. `dummyPool` lets the server
+   *  pick a fallback dummy opponent without needing access to client storage. */
+  join_queue: (data: {
+    userId: string;
+    dummyPool: Array<{ uid: string; elo: number; username: string }>;
+  }) => void;
+  leave_queue: (data: { userId: string }) => void;
 }
 
 export interface ServerToClientEvents {
-  match_joined: (data: { state: GameState; role: 'X' | 'O' | 'Spectator' }) => void;
+  match_joined: (data: { state: GameState; role: 'X' | 'O' | 'Spectator'; opponentUid?: string }) => void;
+  /** Quick Match — emitted when a peer is found or a dummy fallback fired. */
+  match_found: (data: { matchId: string; opponentUid: string; isDummyOpponent: boolean }) => void;
+  queue_cancelled: (data: { reason: 'user' | 'timeout' | 'error' }) => void;
   match_state: (state: GameState) => void;
   move_made: (data: {
     move: Move;
@@ -139,6 +154,8 @@ export interface MatchRecord {
   created_at: number;
   isBotMatch?: boolean;
   botDifficulty?: number;
+  isDummyOpponent?: boolean;
+  opponent_uid?: string;
 }
 
 // ============================================================

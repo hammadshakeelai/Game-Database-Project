@@ -10,6 +10,8 @@ import ChatBox from '../components/ChatBox';
 import GameOverModal from '../components/GameOverModal';
 import DrawOfferModal, { DrawDeclinedToast } from '../components/DrawOfferModal';
 import ConnectionStatus from '../components/ConnectionStatus';
+import OpponentCard from '../components/OpponentCard';
+import { getUsername } from '../stores';
 import { cn, saveMatchToHistory } from '../utils';
 
 export default function GameRoomPage() {
@@ -21,6 +23,7 @@ export default function GameRoomPage() {
   const {
     gameState,
     playerRole,
+    opponentUid,
     accuracyLog,
     evaluation,
     hintMove,
@@ -75,11 +78,14 @@ export default function GameRoomPage() {
         const isDraw = winner === 'Draw';
         const isLoser = !isWinner && !isDraw;
 
-        const eloChange = matchDetails.isBotMatch ? 0 : (isWinner ? 15 : isDraw ? 0 : -15);
+        // Dummy-opponent matches count for Elo / stats just like PvP.
+        const countsForElo = !matchDetails.isBotMatch || !!matchDetails.isDummyOpponent;
+
+        const eloChange = !countsForElo ? 0 : (isWinner ? 15 : isDraw ? 0 : -15);
         const newElo = Math.max(0, profile.elo_rating + eloChange);
 
         let newAvgAccuracy = profile.avg_accuracy;
-        if (!matchDetails.isBotMatch) {
+        if (countsForElo) {
           let myAccuracy = 0;
           const myRole = isPlayerX ? 'X' : 'O';
           const myMoves = accuracyLogRef.current.filter(log => log.move.player === myRole);
@@ -94,10 +100,10 @@ export default function GameRoomPage() {
 
         const updatedProfile = {
           ...profile,
-          matches_played: matchDetails.isBotMatch ? profile.matches_played : profile.matches_played + 1,
-          wins: matchDetails.isBotMatch ? profile.wins : profile.wins + (isWinner ? 1 : 0),
-          losses: matchDetails.isBotMatch ? profile.losses : profile.losses + (isLoser ? 1 : 0),
-          draws: matchDetails.isBotMatch ? profile.draws : profile.draws + (isDraw ? 1 : 0),
+          matches_played: countsForElo ? profile.matches_played + 1 : profile.matches_played,
+          wins:           countsForElo ? profile.wins   + (isWinner ? 1 : 0) : profile.wins,
+          losses:         countsForElo ? profile.losses + (isLoser  ? 1 : 0) : profile.losses,
+          draws:          countsForElo ? profile.draws  + (isDraw   ? 1 : 0) : profile.draws,
           elo_rating: newElo,
           avg_accuracy: newAvgAccuracy,
         };
@@ -108,12 +114,18 @@ export default function GameRoomPage() {
         // Save completed game record for review
         const currentGameState = gameStateRef.current;
         if (matchId && currentGameState) {
+          // Resolve the opponent's display name. For a real bot it's "BOT";
+          // for a dummy-opponent quick match it's the seeded username; for PvP
+          // it's looked up by uid (falls back to the uid if unknown).
+          const opponentDisplay = matchDetails.isDummyOpponent
+            ? getUsername(matchDetails.player_o)
+            : (matchDetails.isBotMatch ? 'BOT' : getUsername(matchDetails.player_o));
           const reviewRecord = {
             matchId,
             moves: currentGameState.moves,
             accuracyLog: accuracyLogRef.current,
-            playerXName: matchDetails.player_x,
-            playerOName: matchDetails.player_o,
+            playerXName: isPlayerX ? (profile.username || '') : opponentDisplay,
+            playerOName: isPlayerX ? opponentDisplay : (profile.username || ''),
             winner,
             playerRole: isPlayerX ? 'X' : 'O',
             timestamp: Date.now(),
@@ -125,14 +137,16 @@ export default function GameRoomPage() {
             id: matchId,
             player_x: matchDetails.player_x,
             player_o: matchDetails.player_o,
-            player_x_name: isPlayerX ? (profile.username || '') : (matchDetails.isBotMatch ? 'BOT' : matchDetails.player_o),
-            player_o_name: isPlayerX ? (matchDetails.isBotMatch ? 'BOT' : matchDetails.player_o) : (profile.username || ''),
+            player_x_name: isPlayerX ? (profile.username || '') : opponentDisplay,
+            player_o_name: isPlayerX ? opponentDisplay : (profile.username || ''),
             winner: winner ?? 'Draw',
             status: 'completed',
             moves_count: matchDetails.moves_count,
             created_at: Date.now(),
             isBotMatch: matchDetails.isBotMatch,
             botDifficulty: matchDetails.botDifficulty,
+            isDummyOpponent: matchDetails.isDummyOpponent,
+            opponent_uid: isPlayerX ? matchDetails.player_o : matchDetails.player_x,
           });
         }
       }
@@ -184,13 +198,14 @@ export default function GameRoomPage() {
     <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col">
       {/* Header */}
       <header className="p-3 sm:p-4 border-b border-slate-800 flex flex-wrap justify-between items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 gap-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button onClick={() => navigate('/lobby')} className="text-slate-400 hover:text-white transition-colors text-sm">
             ← Lobby
           </button>
           <h1 className="text-sm sm:text-lg font-bold text-white">
             Match: <span className="text-indigo-400 font-mono">{matchId}</span>
           </h1>
+          <OpponentCard opponentUid={opponentUid} />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button

@@ -1,86 +1,89 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Mature Ivory + Deep Purple palette (chess.com inspired)
+   Dark Royal palette — deep purple-black background,
+   ivory text, vibrant purple accents.
    Tailwind v4 design tokens overridden via @theme.
    ============================================================ */
 
 @theme {
-  /* Slate scale repurposed as warm ivory / tan / ink neutrals.
-     900 = page background (ivory)
-     800 = card surface (cream)
-     700 = input + border (warm tan)
+  /* Dark plum + ivory palette — darker than the original ivory theme,
+     but ivory is present on text, cards, borders, and accent glows so
+     it feels warm rather than charcoal-cold.
+     900 = page background (deep mocha-plum)
+     800 = card surface (warm mid-tone)
+     700 = input + border (warm violet-ivory)
      600 = hover/divider
-     500..100 = progressively darker text */
-  --color-slate-900: #f1ead7;
-  --color-slate-800: #faf4e3;
-  --color-slate-700: #e2d8bd;
-  --color-slate-600: #c0b497;
-  --color-slate-500: #8a7d6a;
-  --color-slate-400: #635742;
-  --color-slate-300: #443a55;
-  --color-slate-200: #2d2440;
-  --color-slate-100: #1d1530;
+     500..100 = progressively brighter ivory foreground */
+  --color-slate-900: #1f1830;
+  --color-slate-800: #2e2541;
+  --color-slate-700: #463957;
+  --color-slate-600: #695776;
+  --color-slate-500: #9e92a8;
+  --color-slate-400: #cdc1cf;
+  --color-slate-300: #ddd0d4;
+  --color-slate-200: #ebe0d6;
+  --color-slate-100: #f4ecd9;
 
-  /* Indigo recoloured as deep mature purple (player X + primary CTA) */
-  --color-indigo-100: #e6dcf2;
-  --color-indigo-200: #c9b6e0;
-  --color-indigo-300: #9b81c4;
-  --color-indigo-400: #6f4ca3;
-  --color-indigo-500: #553a85;
-  --color-indigo-600: #422866;
-  --color-indigo-700: #321c50;
-  --color-indigo-800: #22133a;
-  --color-indigo-900: #150a26;
+  /* Indigo recoloured as a vibrant royal purple (player X + primary CTA) */
+  --color-indigo-100: #ece1f7;
+  --color-indigo-200: #cfb8ec;
+  --color-indigo-300: #a884d4;
+  --color-indigo-400: #8b65c8;
+  --color-indigo-500: #7548b8;
+  --color-indigo-600: #6336a0;
+  --color-indigo-700: #4d2880;
+  --color-indigo-800: #361a5e;
+  --color-indigo-900: #221040;
 
-  /* Violet aligned with indigo for review / branch UI */
-  --color-violet-300: #b39ad6;
-  --color-violet-400: #7e5cb5;
-  --color-violet-500: #604296;
-  --color-violet-600: #4a307a;
-  --color-violet-700: #382260;
-  --color-violet-800: #271647;
+  /* Violet aligned for review / branch UI */
+  --color-violet-300: #c5aae0;
+  --color-violet-400: #9a7bd6;
+  --color-violet-500: #7e58c4;
+  --color-violet-600: #6442a8;
+  --color-violet-700: #4b3088;
+  --color-violet-800: #321e60;
 
-  /* Rose mapped to deep maroon (player O) */
-  --color-rose-100: #f4dce0;
-  --color-rose-200: #dca4ac;
-  --color-rose-300: #c97c89;
-  --color-rose-400: #a14758;
-  --color-rose-500: #88324a;
-  --color-rose-600: #6f2238;
+  /* Rose — warm magenta for player O */
+  --color-rose-100: #f6dde6;
+  --color-rose-200: #e9a8b8;
+  --color-rose-300: #d97a8f;
+  --color-rose-400: #c4566c;
+  --color-rose-500: #ad3a55;
+  --color-rose-600: #8e2842;
 
-  /* Emerald muted to olive sage (success) */
-  --color-emerald-300: #8ba978;
-  --color-emerald-400: #6e8a5a;
-  --color-emerald-500: #5b7548;
-  --color-emerald-600: #485e39;
-  --color-emerald-700: #38492c;
+  /* Emerald — gentle sage for active / success */
+  --color-emerald-300: #95c2a3;
+  --color-emerald-400: #79ad88;
+  --color-emerald-500: #5f9670;
+  --color-emerald-600: #487a58;
+  --color-emerald-700: #355e42;
 
   /* Cyan replaced with light lavender for gradient text */
-  --color-cyan-300: #c3afe0;
-  --color-cyan-400: #9b81c4;
-  --color-cyan-500: #7e5cb5;
+  --color-cyan-300: #d7c4ec;
+  --color-cyan-400: #b095d8;
+  --color-cyan-500: #9176c4;
 
-  /* Reds — warm brick */
-  --color-red-300: #c97a78;
-  --color-red-400: #a8413e;
-  --color-red-500: #913230;
-  --color-red-600: #7a2826;
+  /* Red — warm brick */
+  --color-red-300: #df8d8b;
+  --color-red-400: #c6605e;
+  --color-red-500: #aa4644;
+  --color-red-600: #893633;
 
-  /* Warm amber / gold accents */
-  --color-amber-300: #d3a04a;
-  --color-amber-400: #b88830;
-  --color-amber-500: #a07426;
+  /* Amber — warm gold accents */
+  --color-amber-300: #e5bf65;
+  --color-amber-400: #d3a542;
+  --color-amber-500: #b8892a;
 
-  /* Sky muted */
-  --color-sky-300: #7da4c4;
-  --color-sky-400: #4f7da5;
-  --color-sky-500: #3e6388;
+  /* Sky — for scheduled status */
+  --color-sky-300: #9ec7e8;
+  --color-sky-400: #6fa6d2;
+  --color-sky-500: #4a87b7;
 
   /* Blue muted */
-  --color-blue-300: #7a8db8;
-  --color-blue-400: #4d6a96;
-  --color-blue-500: #3e5680;
+  --color-blue-300: #97acdc;
+  --color-blue-400: #6c84c0;
+  --color-blue-500: #4d68a4;
 
   --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -99,72 +102,52 @@ body {
   color: var(--color-slate-100);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ivory warmth in the corners + purple glow opposite — keeps the
+     room feeling lit rather than pitch-black. */
+  background-image:
+    radial-gradient(circle at 15% 0%,   rgba(244, 236, 217, 0.10), transparent 55%),
+    radial-gradient(circle at 85% 100%, rgba(139, 101, 200, 0.18), transparent 55%);
+  background-attachment: fixed;
 }
 
 ::selection {
-  background-color: rgba(85, 58, 133, 0.25);
+  background-color: rgba(168, 132, 212, 0.35);
   color: var(--color-slate-100);
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(85, 58, 133, 0.25);
+  background: rgba(168, 132, 212, 0.25);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(85, 58, 133, 0.45);
+  background: rgba(168, 132, 212, 0.5);
 }
 
 /* ============================================================
-   text-white remapping.
-
-   In the original dark theme `text-white` was the default heading
-   colour over slate-900. Globally make it ink-dark for the ivory
-   theme, then push it back to cream only when it sits on a dark
-   purple / emerald / rose / red surface (solid or gradient).
+   text-white remapping — make it ivory across the dark theme.
    ============================================================ */
 
 .text-white {
   color: var(--color-slate-100);
 }
 
-.bg-indigo-500.text-white,
-.bg-indigo-600.text-white,
-.bg-indigo-700.text-white,
-.bg-indigo-800.text-white,
-.bg-violet-500.text-white,
-.bg-violet-600.text-white,
-.bg-violet-700.text-white,
-.bg-emerald-500.text-white,
-.bg-emerald-600.text-white,
-.bg-emerald-700.text-white,
-.bg-rose-500.text-white,
-.bg-rose-600.text-white,
-.bg-red-500.text-white,
-.bg-red-600.text-white {
-  color: #faf4e3;
-}
-
-[class*="from-indigo-"].text-white,
-[class*="from-violet-"].text-white,
-[class*="from-emerald-"].text-white,
-[class*="from-rose-"].text-white,
-[class*="from-red-"].text-white,
-[class*="from-purple-"].text-white {
-  color: #faf4e3;
-}
-
 /* ============================================================
-   Surface tuning — subtle warm shadow for cream cards
+   Surface tuning — soft purple inner glow on cards
    ============================================================ */
 
 .bg-slate-800 {
-  box-shadow: 0 1px 2px rgba(38, 25, 56, 0.06);
+  /* Warm ivory rim + soft shadow — cards read as parchment-lit. */
+  box-shadow:
+    0 1px 0 rgba(244, 236, 217, 0.08) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35);
+  border-color: rgba(244, 236, 217, 0.08);
 }
 
 input, textarea, select {
   color: var(--color-slate-100);
+  background-color: var(--color-slate-900);
 }
 
 input::placeholder,
@@ -177,13 +160,13 @@ textarea::placeholder {
    ============================================================ */
 
 @keyframes board-pulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(85, 58, 133, 0.25); }
-  50%      { box-shadow: 0 0 22px rgba(85, 58, 133, 0.45); }
+  0%, 100% { box-shadow: 0 0 14px rgba(139, 101, 200, 0.35); }
+  50%      { box-shadow: 0 0 28px rgba(139, 101, 200, 0.65); }
 }
 
 @keyframes hint-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(79, 125, 165, 0.4); }
-  50%      { box-shadow: 0 0 16px rgba(79, 125, 165, 0.75); }
+  0%, 100% { box-shadow: 0 0 10px rgba(111, 166, 210, 0.5); }
+  50%      { box-shadow: 0 0 22px rgba(111, 166, 210, 0.85); }
 }
 
 @keyframes float {
@@ -201,6 +184,149 @@ textarea::placeholder {
   background-size: 200% 200%;
   animation: gradient-shift 5s ease infinite;
 }
+
+/* ============================================================
+   Bright mode — ivory background, dark purple text & accents.
+   Activated by adding .bright class on <html>.
+   ============================================================ */
+
+.bright {
+  --color-slate-900: #f1ead7;  /* page = ivory */
+  --color-slate-800: #faf4e3;  /* card = cream */
+  --color-slate-700: #e2d8bd;  /* border = warm tan */
+  --color-slate-600: #c0b497;
+  --color-slate-500: #8a7d6a;
+  --color-slate-400: #635742;
+  --color-slate-300: #443a55;
+  --color-slate-200: #2d2440;
+  --color-slate-100: #1d1530;  /* ink-dark text */
+}
+
+.bright body {
+  background-color: var(--color-slate-900);
+  color: var(--color-slate-100);
+  background-image:
+    radial-gradient(circle at 15% 0%,   rgba(99, 54, 160, 0.06), transparent 55%),
+    radial-gradient(circle at 85% 100%, rgba(184, 136, 48, 0.08), transparent 55%);
+}
+
+.bright .bg-slate-800 {
+  box-shadow: 0 1px 2px rgba(38, 25, 56, 0.08);
+  border-color: rgba(38, 25, 56, 0.08);
+}
+
+/* In bright mode, .text-white maps to dark ink (slate-100), which is wrong
+   on purple/dark surfaces. Force ivory back where the surface is dark. */
+.bright .bg-indigo-500.text-white,
+.bright .bg-indigo-600.text-white,
+.bright .bg-indigo-700.text-white,
+.bright .bg-indigo-800.text-white,
+.bright .bg-violet-500.text-white,
+.bright .bg-violet-600.text-white,
+.bright .bg-violet-700.text-white,
+.bright .bg-emerald-500.text-white,
+.bright .bg-emerald-600.text-white,
+.bright .bg-emerald-700.text-white,
+.bright .bg-rose-500.text-white,
+.bright .bg-rose-600.text-white,
+.bright .bg-red-500.text-white,
+.bright .bg-red-600.text-white,
+.bright [class*="from-indigo-"].text-white,
+.bright [class*="from-violet-"].text-white,
+.bright [class*="from-emerald-"].text-white,
+.bright [class*="from-rose-"].text-white,
+.bright [class*="from-red-"].text-white,
+.bright [class*="from-purple-"].text-white {
+  color: #faf4e3;
+}
+
+.bright input,
+.bright textarea,
+.bright select {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-100);
+}
+
+/* ============================================================
+   Tic-Tac-Toe board palette — black, deep purple, silvery,
+   dark-brown. Applied via .ttt-* classes regardless of mode.
+   ============================================================ */
+
+:root {
+  --ttt-board-grad: linear-gradient(135deg, #0a0610 0%, #1a0f08 50%, #0a0610 100%);
+  --ttt-cell-grad:  linear-gradient(160deg, #1a120a 0%, #0e0816 100%);
+  --ttt-cell-hover: linear-gradient(160deg, #261a10 0%, #170c22 100%);
+  --ttt-silver:     #c9c2b3;
+  --ttt-silver-dim: rgba(201, 194, 179, 0.32);
+  --ttt-purple:     #8b65c8;
+  --ttt-purple-glow: rgba(139, 101, 200, 0.55);
+  --ttt-brown-trim: rgba(122, 80, 40, 0.45);
+}
+
+.ttt-superboard {
+  background: var(--ttt-board-grad);
+  border: 1px solid var(--ttt-silver-dim);
+  box-shadow:
+    0 0 0 1px rgba(122, 80, 40, 0.25) inset,
+    0 18px 50px rgba(0, 0, 0, 0.55),
+    0 0 80px rgba(139, 101, 200, 0.18);
+}
+
+.ttt-subboard {
+  background: #0a0610;
+  border: 1px solid var(--ttt-silver-dim);
+  box-shadow: 0 0 0 1px var(--ttt-brown-trim) inset;
+  transition: box-shadow 250ms ease, border-color 250ms ease;
+}
+
+.ttt-subboard.active {
+  border-color: var(--ttt-purple);
+  box-shadow:
+    0 0 0 1px var(--ttt-brown-trim) inset,
+    0 0 24px var(--ttt-purple-glow),
+    0 0 0 2px rgba(139, 101, 200, 0.4);
+}
+
+.ttt-subboard.dim { opacity: 0.55; }
+
+.ttt-subboard-overlay {
+  background: rgba(10, 6, 16, 0.85);
+  backdrop-filter: blur(2px);
+}
+
+.ttt-cell {
+  background: var(--ttt-cell-grad);
+  border: 1px solid rgba(201, 194, 179, 0.18);
+  color: var(--ttt-silver);
+  transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+}
+
+.ttt-cell.playable:hover:not(:disabled) {
+  background: var(--ttt-cell-hover);
+  border-color: var(--ttt-silver);
+  transform: scale(1.05);
+}
+
+.ttt-cell.x-piece {
+  color: var(--ttt-purple);
+  text-shadow:
+    0 0 8px var(--ttt-purple-glow),
+    0 0 18px rgba(139, 101, 200, 0.35);
+}
+
+.ttt-cell.o-piece {
+  color: var(--ttt-silver);
+  text-shadow:
+    0 0 8px rgba(201, 194, 179, 0.55),
+    0 0 18px rgba(201, 194, 179, 0.3);
+}
+
+.ttt-overlay-x { color: var(--ttt-purple);  text-shadow: 0 0 14px var(--ttt-purple-glow); }
+.ttt-overlay-o { color: var(--ttt-silver);  text-shadow: 0 0 14px rgba(201, 194, 179, 0.55); }
+
+.ttt-cell.hint  { border-color: #6fa6d2; box-shadow: 0 0 12px rgba(111, 166, 210, 0.5); }
+.ttt-cell.last  { border-color: #d3a542; box-shadow: 0 0 10px rgba(211, 165, 66, 0.45); }
+.ttt-cell.best  { border-color: #79ad88; box-shadow: 0 0 10px rgba(121, 173, 136, 0.45); }
 
 /* ============================================================
    Alternate themes (preserved, opt-in via class on root)

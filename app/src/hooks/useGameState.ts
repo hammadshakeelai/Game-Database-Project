@@ -11,6 +11,7 @@ interface UseGameStateProps {
 interface UseGameStateReturn {
   gameState: GameState | null;
   playerRole: 'X' | 'O' | 'Spectator' | null;
+  opponentUid: string | null;
   accuracyLog: MoveAccuracyLog[];
   evaluation: number;
   hintMove: Move | null;
@@ -36,6 +37,8 @@ export interface GameOverData {
     isBotMatch: boolean;
     moves_count: number;
     botDifficulty?: number;
+    isDummyOpponent?: boolean;
+    dummyUid?: string;
   };
 }
 
@@ -46,6 +49,7 @@ export interface GameOverData {
 export function useGameState({ socket, matchId, userId }: UseGameStateProps): UseGameStateReturn {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerRole, setPlayerRole] = useState<'X' | 'O' | 'Spectator' | null>(null);
+  const [opponentUid, setOpponentUid] = useState<string | null>(null);
   const [accuracyLog, setAccuracyLog] = useState<MoveAccuracyLog[]>([]);
   const [evaluation, setEvaluation] = useState(0);
   const [hintMove, setHintMove] = useState<Move | null>(null);
@@ -71,9 +75,14 @@ export function useGameState({ socket, matchId, userId }: UseGameStateProps): Us
     // Join the match
     socket.emit('join_match', { matchId, userId });
 
-    const onMatchJoined = ({ state, role }: { state: GameState; role: 'X' | 'O' | 'Spectator' }) => {
+    const onMatchJoined = ({ state, role, opponentUid: oppUid }: {
+      state: GameState;
+      role: 'X' | 'O' | 'Spectator';
+      opponentUid?: string;
+    }) => {
       setGameState(state);
       setPlayerRole(role);
+      setOpponentUid(oppUid ?? null);
     };
 
     const onMatchState = (state: GameState) => {
@@ -202,6 +211,7 @@ export function useGameState({ socket, matchId, userId }: UseGameStateProps): Us
   return {
     gameState,
     playerRole,
+    opponentUid,
     accuracyLog,
     evaluation,
     hintMove,

@@ -18,7 +18,7 @@ export default function SuperBoard({ gameState, playerRole, hintMove, onCellClic
   return (
     <div
       id="super-board"
-      className="grid grid-cols-3 gap-1.5 sm:gap-3 md:gap-4 p-3 sm:p-4 bg-slate-800/80 rounded-2xl shadow-2xl border border-slate-700/50 backdrop-blur-sm"
+      className="ttt-superboard grid grid-cols-3 gap-1.5 sm:gap-3 md:gap-4 p-3 sm:p-4 rounded-2xl"
     >
       {gameState.superBoard.map((subBoard, superIdx) => {
         const isRequired = gameState.nextRequiredSubBoard === superIdx;

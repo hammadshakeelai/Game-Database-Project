@@ -6,9 +6,11 @@ import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import ChatBox from '../components/ChatBox';
 import NotificationBell from '../components/NotificationBell';
+import ModeToggle from '../components/ModeToggle';
+import QuickMatchOverlay from '../components/QuickMatchOverlay';
 import { cn, generateMatchId, formatDate, getMatchHistory, BOT_DIFFICULTY_LABELS, BOT_DIFFICULTY_COLORS } from '../utils';
 import type { MatchRecord } from '../types';
-import { listGameTypes } from '../stores';
+import { listAllUsers, listGameTypes } from '../stores';
 
 export default function LobbyPage() {
   const { user, profile, isLocalMode } = useAuth();
@@ -34,6 +36,7 @@ export default function LobbyPage() {
   }, [user?.uid]);
 
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [showQuickMatch, setShowQuickMatch] = useState(false);
   const [botDifficulty, setBotDifficulty] = useState(3);
   const [gameMode, setGameMode] = useState<'bot' | 'friend'>('bot');
   const [joinCode, setJoinCode] = useState('');
@@ -92,6 +95,16 @@ export default function LobbyPage() {
     }
   };
 
+  /** Quick Match — search the queue, fall back to a dummy after 5 s. */
+  const startQuickMatch = () => {
+    if (!socket || !user) return;
+    const dummyPool = listAllUsers()
+      .filter(u => /^P\d/.test(u.uid) && u.profile)
+      .map(u => ({ uid: u.uid, elo: u.profile!.elo_rating, username: u.profile!.username }));
+    socket.emit('join_queue', { userId: user.uid, dummyPool });
+    setShowQuickMatch(true);
+  };
+
   const difficultyLabels = ['', 'Beginner', 'Easy', 'Medium', 'Hard', 'Expert'];
 
   return (
@@ -123,7 +136,7 @@ export default function LobbyPage() {
             {[
               { to: '/lobby', label: 'Lobby' },
               { to: '/tournaments', label: 'Tournaments' },
-              { to: '/groups', label: 'Groups' },
+              { to: '/groups', label: 'Clans' },
               { to: '/friends', label: 'Friends' },
               { to: '/leaderboard', label: 'Leaderboard' },
             ].map(item => (
@@ -145,6 +158,7 @@ export default function LobbyPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2 shrink-0">
+            <ModeToggle />
             <NotificationBell />
             <Link
               to={`/profile/${user?.uid}`}
@@ -186,10 +200,16 @@ export default function LobbyPage() {
             </div>
             <div className="flex flex-col gap-3 w-full md:w-auto">
               <button
-                onClick={() => { setGameMode('friend'); setShowCustomModal(true); }}
+                onClick={startQuickMatch}
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20 w-full"
               >
                 Play Online
+              </button>
+              <button
+                onClick={() => { setGameMode('friend'); setShowCustomModal(true); }}
+                className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20 w-full"
+              >
+                Play Friend
               </button>
               <button
                 onClick={() => { setGameMode('bot'); setShowCustomModal(true); }}
@@ -331,6 +351,14 @@ export default function LobbyPage() {
       </div>
 
       {/* Custom Game Modal */}
+      {showQuickMatch && user && (
+        <QuickMatchOverlay
+          socket={socket}
+          userId={user.uid}
+          onCancel={() => setShowQuickMatch(false)}
+        />
+      )}
+
       {showCustomModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div

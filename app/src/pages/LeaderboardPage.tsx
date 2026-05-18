@@ -1,41 +1,42 @@
-import { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserProfile } from '../AuthContext';
+import { listAllUsers } from '../stores';
 import { cn } from '../utils';
 
+type LeaderRow = UserProfile & { id: string };
+
 export default function LeaderboardPage() {
-  const [leaders, setLeaders] = useState<(UserProfile & { id: string })[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [leaders, setLeaders] = useState<LeaderRow[]>([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchLeaders = async () => {
-      try {
-        const q = query(
-          collection(db, 'users'),
-          orderBy('elo_rating', 'desc'),
-          limit(50)
-        );
-        const snapshot = await getDocs(q);
-        setLeaders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)));
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchLeaders();
+  const loadLeaders = useMemo(() => () => {
+    const all = listAllUsers()
+      .filter(u => u.profile)
+      .map(u => ({ id: u.uid, ...(u.profile as UserProfile) }))
+      .sort((a, b) => b.elo_rating - a.elo_rating)
+      .slice(0, 50);
+    setLeaders(all);
   }, []);
+
+  useEffect(() => {
+    loadLeaders();
+    const onUpdate = () => loadLeaders();
+    window.addEventListener('profile-updated', onUpdate);
+    window.addEventListener('storage', onUpdate);
+    return () => {
+      window.removeEventListener('profile-updated', onUpdate);
+      window.removeEventListener('storage', onUpdate);
+    };
+  }, [loadLeaders]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-200 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate('/lobby')} className="text-slate-400 hover:text-white transition-colors">
-            &larr; Back to Lobby
+          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white transition-colors">
+            &larr; Back
           </button>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,8 +46,8 @@ export default function LeaderboardPage() {
           </h1>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12 text-slate-400">Loading top players...</div>
+        {leaders.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">No players yet.</div>
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -66,10 +67,10 @@ export default function LeaderboardPage() {
               </thead>
               <tbody>
                 {leaders.map((player, index) => {
-                  const winRate = player.matches_played > 0 
-                    ? Math.round((player.wins / player.matches_played) * 100) 
+                  const winRate = player.matches_played > 0
+                    ? Math.round((player.wins / player.matches_played) * 100)
                     : 0;
-                  
+
                   return (
                     <tr key={player.id} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
                       <td className="p-4 text-center font-mono">

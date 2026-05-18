@@ -18,7 +18,7 @@ import {
   updateTournamentStatus,
 } from '../stores';
 import type { TournamentStatus } from '../types';
-import { cn, formatDate } from '../utils';
+import { cn, formatDate, tournamentRunningLabel } from '../utils';
 
 export default function TournamentDetailPage() {
   const { tid } = useParams<{ tid: string }>();
@@ -80,7 +80,7 @@ export default function TournamentDetailPage() {
   return (
     <PageShell
       title={tournament.name}
-      subtitle={`${participants.length} / ${tournament.max_participants} registered · scheduled ${formatDate(tournament.scheduled_at)}`}
+      subtitle={`${participants.length} / ${tournament.max_participants} registered · ${tournamentRunningLabel(tournament.status, tournament.scheduled_at)} · ${formatDate(tournament.scheduled_at)}`}
       actions={
         <>
           <span className={cn('px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider', TOURNAMENT_STATUS_COLORS[tournament.status])}>

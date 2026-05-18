@@ -47,14 +47,14 @@ export default function GroupsPage() {
 
   return (
     <PageShell
-      title="Groups"
-      subtitle="Player-run communities. Create one, invite friends, organize practice sessions."
+      title="Clans"
+      subtitle="Player-run clans. Join a clan to chat with clanmates and organise practice sessions."
       actions={
         <button
           onClick={() => setShowCreate(true)}
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-lg shadow-indigo-500/20"
         >
-          Create Group
+          Create Clan
         </button>
       }
     >
@@ -65,10 +65,10 @@ export default function GroupsPage() {
       )}
 
       <section className="mb-10">
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">My Groups</h2>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">My Clans</h2>
         {myGroups.length === 0 ? (
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 text-center text-sm text-slate-500">
-            You are not in any groups yet. Browse public groups below or create your own.
+            You are not in any clans yet. Browse public clans below or create your own.
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -81,10 +81,10 @@ export default function GroupsPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Public Groups</h2>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Public Clans</h2>
         {publicGroups.length === 0 ? (
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 text-center text-sm text-slate-500">
-            No public groups to join right now.
+            No public clans to join right now.
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -192,17 +192,17 @@ function CreateGroupModal({ ownerPid, onClose }: { ownerPid: string; onClose: ()
         animate={{ scale: 1, opacity: 1 }}
         className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl"
       >
-        <h3 className="text-2xl font-bold text-white font-serif mb-5">Create a Group</h3>
+        <h3 className="text-2xl font-bold text-white font-serif mb-5">Create a Clan</h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Name</label>
+            <label className="block text-xs font-semibold text-slate-400 mb-1">Clan Name</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               maxLength={120}
-              placeholder="e.g. Knight's Gambit Club"
+              placeholder="e.g. Knight's Gambit Clan"
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
             />
           </div>

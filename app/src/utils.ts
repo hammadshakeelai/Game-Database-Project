@@ -36,6 +36,49 @@ export function formatTimeAgo(timestamp: number): string {
 }
 
 /**
+ * Format a timestamp relative to now, with future and past variants.
+ *   future: "in 3d", "in 5h", "in 12m", "starting now"
+ *   past:   "3d ago", "5h ago", "12m ago", "just now"
+ */
+export function formatRelativeFromNow(timestamp: number): string {
+  const diffMs = timestamp - Date.now();
+  const abs = Math.abs(diffMs);
+  const minutes = Math.floor(abs / 60_000);
+  if (minutes < 1) return diffMs >= 0 ? 'starting now' : 'just now';
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const unit = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${minutes}m`;
+  return diffMs >= 0 ? `in ${unit}` : `${unit} ago`;
+}
+
+/**
+ * Human-friendly tournament running label.
+ *   scheduled (future) -> "Starts in 3d"
+ *   active (started)   -> "Running · started 2d ago"
+ *   completed          -> "Finished 5d ago"
+ *   cancelled          -> "Cancelled"
+ */
+export function tournamentRunningLabel(
+  status: 'scheduled' | 'active' | 'completed' | 'cancelled',
+  scheduledAt: number,
+): string {
+  if (status === 'cancelled') return 'Cancelled';
+  if (status === 'completed') {
+    const diff = Date.now() - scheduledAt;
+    return diff > 0 ? `Finished ${formatRelativeFromNow(scheduledAt)}` : 'Finished';
+  }
+  if (status === 'active') {
+    return scheduledAt <= Date.now()
+      ? `Running · started ${formatRelativeFromNow(scheduledAt)}`
+      : `Running · starts ${formatRelativeFromNow(scheduledAt)}`;
+  }
+  // scheduled
+  return scheduledAt <= Date.now()
+    ? `Starting now · scheduled ${formatRelativeFromNow(scheduledAt)}`
+    : `Starts ${formatRelativeFromNow(scheduledAt)}`;
+}
+
+/**
  * Format Elo with a sign prefix.
  */
 export function formatEloChange(change: number): string {

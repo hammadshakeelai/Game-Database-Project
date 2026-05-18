@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth, localSignOut } from '../AuthContext';
 import NotificationBell from './NotificationBell';
+import ModeToggle from './ModeToggle';
 import { cn } from '../utils';
 
 interface PageShellProps {
@@ -15,7 +16,7 @@ interface PageShellProps {
 const NAV = [
   { to: '/lobby',        label: 'Lobby' },
   { to: '/tournaments',  label: 'Tournaments' },
-  { to: '/groups',       label: 'Groups' },
+  { to: '/groups',       label: 'Clans' },
   { to: '/friends',      label: 'Friends' },
   { to: '/leaderboard',  label: 'Leaderboard' },
 ];
@@ -54,6 +55,7 @@ export default function PageShell({ title, subtitle, children, actions }: PageSh
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
+            <ModeToggle />
             <NotificationBell />
             <Link
               to={`/profile/${user?.uid}`}
@@ -82,6 +84,12 @@ export default function PageShell({ title, subtitle, children, actions }: PageSh
         <div className="border-b border-slate-700 bg-slate-900">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
+              <button
+                onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/lobby'))}
+                className="text-slate-400 hover:text-white transition-colors text-sm mb-2 inline-flex items-center gap-1"
+              >
+                &larr; Back
+              </button>
               {title && <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif tracking-tight">{title}</h1>}
               {subtitle && <p className="text-sm text-slate-400 mt-1">{subtitle}</p>}
             </div>
