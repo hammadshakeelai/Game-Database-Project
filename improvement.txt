@@ -1,0 +1,15 @@
+-- add chat to clans
+-- better ui/ux
+-- better dummy data
+-- add constraints on win rate
+-- better erd
+-- global chat scrolling
+-- semantic table names in erd
+-- game runtime chat becomes robust
+-- chatbot from free api
+--
+
+
+
+-- 
+-- deployment
