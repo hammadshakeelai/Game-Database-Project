@@ -7,7 +7,12 @@
       "Bash(netstat -ano)",
       "Bash(findstr :3000)",
       "Bash(taskkill *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(Copy-Item C:\\\\Users\\\\HP\\\\Documents\\\\GitHub\\\\databases\\\\Game-Database-Project\\\\milestone 5\\\\milestone5_data_population_dml\\\\csv\\\\* *)",
+      "PowerShell(mysql *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -p --execute=\"source C:/Users/HP/Documents/GitHub/databases/Game-Database-Project/viva/master.sql\")",
+      "PowerShell(pandoc *)",
+      "PowerShell(pip show *)"
     ]
   }
 }
