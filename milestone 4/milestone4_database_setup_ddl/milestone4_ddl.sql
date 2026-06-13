@@ -329,9 +329,6 @@ CREATE TABLE group_list (
 
     CONSTRAINT chk_group_list_role CHECK (
         role IN ('owner', 'admin', 'moderator', 'member')
-    ),
-    CONSTRAINT chk_group_list_not_self_invited CHECK (
-        invited_by IS NULL OR invited_by <> PID
     )
 );
 
@@ -359,11 +356,9 @@ CREATE TABLE friends (
         FOREIGN KEY (requested_by) REFERENCES player(PID)
         ON UPDATE CASCADE ON DELETE CASCADE,
 
-    CONSTRAINT chk_friends_distinct_players CHECK (PID1 <> PID2),
     CONSTRAINT chk_friends_status CHECK (
         status IN ('pending', 'accepted', 'blocked')
-    ),
-    CONSTRAINT chk_friends_requester CHECK (requested_by IN (PID1, PID2))
+    )
 );
 
 -- ==========================================================
@@ -442,7 +437,6 @@ CREATE TABLE chat (
         FOREIGN KEY (PID2) REFERENCES player(PID)
         ON UPDATE CASCADE ON DELETE CASCADE,
 
-    CONSTRAINT chk_chat_distinct_players CHECK (PID1 <> PID2),
     CONSTRAINT chk_chat_message_time CHECK (
         last_message_at IS NULL OR last_message_at >= created_at
     )
@@ -477,9 +471,6 @@ CREATE TABLE message (
 
     CONSTRAINT chk_message_content CHECK (
         text_content IS NOT NULL OR media_url IS NOT NULL
-    ),
-    CONSTRAINT chk_message_not_reply_to_self CHECK (
-        reply_to IS NULL OR reply_to <> message_ID
     )
 );
 
