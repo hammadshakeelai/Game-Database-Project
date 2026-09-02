@@ -22,10 +22,11 @@ export default defineConfig({
           // 5s default, and the suites share one server so they run serially.
           testTimeout: 20000,
           hookTimeout: 30000,
-          fileParallelism: false,
         },
       },
     ],
+    // Integration suites share one server and the emulator, so they run serially.
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       include: ['src/gameLogic.ts', 'server/**/*.ts'],

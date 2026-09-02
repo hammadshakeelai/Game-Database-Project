@@ -1,48 +1,33 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ThemeProvider } from './ThemeContext';
-import { AuthProvider, useAuth } from './AuthContext';
-import LandingPage from './pages/LandingPage';
-import AuthPage from './pages/AuthPage';
+import type { ReactNode } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
+import SignInPage from './pages/SignInPage';
 import LobbyPage from './pages/LobbyPage';
-import GameRoomPage from './pages/GameRoomPage';
-import SummaryPage from './pages/SummaryPage';
-import OnboardingPage from './pages/OnboardingPage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import ProfilePage from './pages/ProfilePage';
-import ReviewPage from './pages/ReviewPage';
-import FriendsPage from './pages/FriendsPage';
-import GroupsPage from './pages/GroupsPage';
-import GroupDetailPage from './pages/GroupDetailPage';
-import TournamentsPage from './pages/TournamentsPage';
-import TournamentDetailPage from './pages/TournamentDetailPage';
-import NotificationsPage from './pages/NotificationsPage';
+import GamePage from './pages/GamePage';
+import { Spinner } from './components/Spinner';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, profileLoading } = useAuth();
+/**
+ * Gate for signed-in routes.
+ *
+ * While auth is resolving this renders a spinner rather than the signed-out
+ * view, so a reload never flashes the sign-in screen at an authenticated player.
+ * An invite link is preserved through sign-in via the `next` parameter.
+ */
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { status } = useAuth();
   const location = useLocation();
 
-  if (loading || profileLoading) {
+  if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-900 text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
+      <main className="flex min-h-dvh items-center justify-center bg-slate-900">
+        <Spinner label="Signing you in" />
+      </main>
     );
   }
 
-  if (!user) return <Navigate to="/login" />;
-  
-  if (!profile && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" />;
-  }
-
-  if (profile && location.pathname === '/onboarding') {
-    return <Navigate to="/lobby" />;
+  if (status !== 'signed-in') {
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/?next=${next}`} replace />;
   }
 
   return <>{children}</>;
@@ -50,29 +35,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="/register" element={<AuthPage />} />
-            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-            <Route path="/lobby" element={<ProtectedRoute><LobbyPage /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
-            <Route path="/profile/:uid" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/play/:matchId" element={<ProtectedRoute><GameRoomPage /></ProtectedRoute>} />
-            <Route path="/summary/:matchId" element={<ProtectedRoute><SummaryPage /></ProtectedRoute>} />
-            <Route path="/review/:matchId" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
-            <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
-            <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
-            <Route path="/groups/:gid" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
-            <Route path="/tournaments" element={<ProtectedRoute><TournamentsPage /></ProtectedRoute>} />
-            <Route path="/tournaments/:tid" element={<ProtectedRoute><TournamentDetailPage /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SignInPage />} />
+          <Route
+            path="/play"
+            element={
+              <RequireAuth>
+                <LobbyPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/play/:matchId"
+            element={
+              <RequireAuth>
+                <GamePage />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

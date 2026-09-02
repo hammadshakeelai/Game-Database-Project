@@ -1,457 +1,224 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth, localSignOut } from '../AuthContext';
-
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { useNavigate, Link, NavLink } from 'react-router-dom';
-import { useSocket } from '../hooks/useSocket';
-import ChatBox from '../components/ChatBox';
-import NotificationBell from '../components/NotificationBell';
-import ModeToggle from '../components/ModeToggle';
-import QuickMatchOverlay from '../components/QuickMatchOverlay';
-import { cn, generateMatchId, formatDate, getMatchHistory, BOT_DIFFICULTY_LABELS, BOT_DIFFICULTY_COLORS } from '../utils';
-import type { MatchRecord } from '../types';
-import { listAllUsers, listGameTypes } from '../stores';
+import { Bot, LogOut, Plus, Users } from 'lucide-react';
+import { useAuth } from '../features/auth/AuthContext';
+import { useSocket } from '../features/game/useSocket';
+import { ERROR_COPY, type ErrorCode, type MatchView } from '../features/game/types';
+import { Spinner } from '../components/Spinner';
+import { ConnectionBanner } from '../components/ConnectionBanner';
 
+type AckResponse = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
+
+/** Home screen: start a game, join one, or play the computer. */
 export default function LobbyPage() {
-  const { user, profile, isLocalMode } = useAuth();
   const navigate = useNavigate();
-  const { socket } = useSocket();
-  const [matches, setMatches] = useState<MatchRecord[]>([]);
-  const [chatMessages, setChatMessages] = useState<{ sender: string; message: string; timestamp: number }[]>([]);
+  const { user, profile, recent, statsLoading, signOut, refreshStats } = useAuth();
+  const { socket, connection, error: socketError } = useSocket();
 
-  // Load local match history
+  const [code, setCode] = useState('');
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [pending, setPending] = useState<null | 'create' | 'bot' | 'join'>(null);
+
+  // Stats may have changed while a game was played in another tab.
   useEffect(() => {
-    if (user?.uid) {
-      setMatches(getMatchHistory(user.uid).slice(0, 10));
-    }
-  }, [user?.uid]);
+    void refreshStats();
+  }, [refreshStats]);
 
-  // Refresh history when returning from a game
-  useEffect(() => {
-    const refresh = () => {
-      if (user?.uid) setMatches(getMatchHistory(user.uid).slice(0, 10));
-    };
-    window.addEventListener('profile-updated', refresh);
-    return () => window.removeEventListener('profile-updated', refresh);
-  }, [user?.uid]);
+  const ready = socket !== null && connection === 'connected';
 
-  const [showCustomModal, setShowCustomModal] = useState(false);
-  const [showQuickMatch, setShowQuickMatch] = useState(false);
-  const [botDifficulty, setBotDifficulty] = useState(3);
-  const [gameMode, setGameMode] = useState<'bot' | 'friend'>('bot');
-  const [joinCode, setJoinCode] = useState('');
-  const gameTypes = useMemo(() => listGameTypes(), []);
-  const [gameTypeId, setGameTypeId] = useState<string>(gameTypes[0]?.gt_id ?? '');
+  const createMatch = useCallback(
+    (mode: 'pvp' | 'bot', botDifficulty?: number) => {
+      if (!socket || pending) return;
+      setPending(mode === 'bot' ? 'bot' : 'create');
+      setJoinError(null);
+      socket.emit('create_match', { mode, botDifficulty }, (res: AckResponse) => {
+        setPending(null);
+        if (res.ok) navigate(`/play/${res.match.id}`);
+        else setJoinError(ERROR_COPY[res.code] ?? res.message);
+      });
+    },
+    [socket, navigate, pending],
+  );
 
-  // Socket-based global chat
-  useEffect(() => {
-    if (!socket) return;
-    const onGlobalChat = (data: { sender: string; message: string; timestamp: number }) => {
-      setChatMessages(prev => [...prev, data]);
-    };
-    socket.on('global_chat_receive', onGlobalChat);
-    return () => { socket.off('global_chat_receive', onGlobalChat); };
-  }, [socket]);
-
-  const sendGlobalChat = (message: string) => {
-    if (!user || !profile || !socket) return;
-    socket.emit('global_chat_send', {
-      sender: profile.username,
-      message,
-      timestamp: Date.now(),
-    });
-  };
-
-  const persistGameTypeSelection = (matchId: string) => {
-    if (gameTypeId) {
-      try {
-        localStorage.setItem(`match_gametype_${matchId}`, gameTypeId);
-      } catch {/* ignore quota errors */}
-    }
-  };
-
-  const createPrivateMatch = () => {
-    const matchId = generateMatchId();
-    if (socket && user) {
-      persistGameTypeSelection(matchId);
-      socket.emit('create_match', { matchId, userId: user.uid });
-      setTimeout(() => navigate(`/play/${matchId}`), 100);
-    }
-  };
-
-  const createBotMatch = () => {
-    const matchId = generateMatchId('bot');
-    if (socket && user) {
-      persistGameTypeSelection(matchId);
-      socket.emit('create_match', { matchId, userId: user.uid, isBotMatch: true, botDifficulty });
-      setTimeout(() => navigate(`/play/${matchId}`), 100);
-    }
-  };
-
-  const joinMatchByCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (joinCode.trim()) {
-      navigate(`/play/${joinCode.trim().toUpperCase()}`);
-    }
-  };
-
-  /** Quick Match — search the queue, fall back to a dummy after 5 s. */
-  const startQuickMatch = () => {
-    if (!socket || !user) return;
-    const dummyPool = listAllUsers()
-      .filter(u => /^P\d/.test(u.uid) && u.profile)
-      .map(u => ({ uid: u.uid, elo: u.profile!.elo_rating, username: u.profile!.username }));
-    socket.emit('join_queue', { userId: user.uid, dummyPool });
-    setShowQuickMatch(true);
-  };
-
-  const difficultyLabels = ['', 'Beginner', 'Easy', 'Medium', 'Hard', 'Expert'];
+  const joinMatch = useCallback(
+    (event: FormEvent) => {
+      event.preventDefault();
+      const trimmed = code.trim().toUpperCase();
+      if (!socket || !trimmed || pending) return;
+      setPending('join');
+      setJoinError(null);
+      socket.emit('join_match', { matchId: trimmed }, (res: AckResponse) => {
+        setPending(null);
+        if (res.ok) navigate(`/play/${res.match.id}`);
+        else setJoinError(ERROR_COPY[res.code] ?? res.message);
+      });
+    },
+    [socket, code, navigate, pending],
+  );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col lg:flex-row">
-      {/* Sidebar - Global Chat */}
-      <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col bg-slate-900/50 h-64 lg:h-auto">
-        <div className="p-4 border-b border-slate-800 bg-slate-800/50 shrink-0">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            Global Chat
-          </h2>
-        </div>
-        <div className="flex-1 min-h-0">
-          <ChatBox
-            messages={chatMessages}
-            onSend={sendGlobalChat}
-            currentUserName={profile?.username || ''}
-            title="Global Chat"
-            placeholder="Type a message..."
-            emptyMessage="Welcome to Global Chat!"
-          />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-4 sm:p-8 overflow-y-auto relative">
-        <div className="sticky top-0 -mx-4 -mt-4 sm:-mx-8 sm:-mt-8 mb-6 px-4 sm:px-8 py-3 bg-slate-900/90 backdrop-blur-md border-b border-slate-700 z-20 flex items-center gap-3 flex-wrap">
-          <nav className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
-            {[
-              { to: '/lobby', label: 'Lobby' },
-              { to: '/tournaments', label: 'Tournaments' },
-              { to: '/groups', label: 'Clans' },
-              { to: '/friends', label: 'Friends' },
-              { to: '/leaderboard', label: 'Leaderboard' },
-            ].map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/lobby'}
-                className={({ isActive }) =>
-                  cn(
-                    'px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap',
-                    isActive
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-800',
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <ModeToggle />
-            <NotificationBell />
-            <Link
-              to={`/profile/${user?.uid}`}
-              className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-sm font-semibold text-white"
-            >
-              Profile
-            </Link>
-            <button
-              onClick={() => { localSignOut(); window.location.href = '/'; }}
-              className="text-slate-400 hover:text-red-500 transition-colors text-sm font-medium px-2"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Profile Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between shadow-xl gap-6"
-          >
-            <div className="flex items-center gap-4 sm:gap-6">
-              <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-indigo-600 to-indigo-500 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-white shadow-lg shadow-indigo-500/30">
-                {profile?.username?.[0]?.toUpperCase()}
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile?.username}</h1>
-                <div className="flex gap-3 text-sm text-slate-400 flex-wrap">
-                  <div className="bg-slate-900 px-3 py-1 rounded-full border border-slate-700">
-                    Elo: <span className="text-indigo-400 font-mono font-bold">{profile?.elo_rating}</span>
-                  </div>
-                  <div className="bg-slate-900 px-3 py-1 rounded-full border border-slate-700">
-                    Matches: <span className="text-emerald-400 font-mono font-bold">{profile?.matches_played || 0}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 w-full md:w-auto">
-              <button
-                onClick={startQuickMatch}
-                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20 w-full"
-              >
-                Play Online
-              </button>
-              <button
-                onClick={() => { setGameMode('friend'); setShowCustomModal(true); }}
-                className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-violet-500/20 w-full"
-              >
-                Play Friend
-              </button>
-              <button
-                onClick={() => { setGameMode('bot'); setShowCustomModal(true); }}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/20 w-full"
-              >
-                Play Computer
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Join by Code */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4"
-          >
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Join with Code</h2>
-              <p className="text-sm text-slate-400">Have a match code from a friend? Enter it here.</p>
-            </div>
-            <form onSubmit={joinMatchByCode} className="flex w-full md:w-auto gap-2">
-              <input
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="e.g. A1B2C3"
-                className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 font-mono uppercase w-full md:w-48 transition-colors"
-                maxLength={8}
+    <main className="min-h-dvh bg-slate-900 px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto w-full max-w-2xl">
+        <header className="mb-8 flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            {profile?.photoURL ? (
+              <img
+                src={profile.photoURL}
+                alt=""
+                className="h-10 w-10 shrink-0 rounded-full border border-slate-700"
+                referrerPolicy="no-referrer"
               />
-              <button
-                type="submit"
-                disabled={!joinCode.trim()}
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-bold transition-colors"
-              >
-                Join
-              </button>
-            </form>
-          </motion.div>
-
-          {/* Pro Tips */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 shadow-xl"
-          >
-            <h2 className="text-xl font-bold text-white mb-4">Pro Tips</h2>
-            <ul className="space-y-2 text-sm text-slate-300 list-disc list-inside">
-              <li><strong>Control the Center:</strong> Winning the center sub-board gives you a massive strategic advantage.</li>
-              <li><strong>Force Moves:</strong> Send your opponent to sub-boards that are already won or full for free choice.</li>
-              <li><strong>Sacrifice for Position:</strong> Sometimes losing a sub-board is worth it for better global board position.</li>
-              <li><strong>Use Hints:</strong> If stuck, the Hint button shows the AI's suggested move.</li>
-            </ul>
-          </motion.div>
-
-          {/* Match History */}
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Recent Matches</h2>
-              <Link
-                to={`/profile/${user?.uid}`}
-                className="text-sm px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
-              >
-                View Full History
-              </Link>
-            </div>
-            <div className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
-                    <th className="p-4 font-medium">Opponent</th>
-                    <th className="p-4 font-medium">Result</th>
-                    <th className="p-4 font-medium hidden sm:table-cell">Moves</th>
-                    <th className="p-4 font-medium hidden md:table-cell">Status</th>
-                    <th className="p-4 font-medium hidden sm:table-cell">Date</th>
-                    <th className="p-4 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {matches.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-500">No matches played yet.</td>
-                    </tr>
-                  ) : (
-                    matches.map((match) => {
-                      const isPlayerX = match.player_x === user?.uid;
-                      const myRole = isPlayerX ? 'X' : 'O';
-                      const isWinner = match.winner === myRole;
-                      const isDraw = match.winner === 'Draw';
-                      const resultColor = isWinner ? 'bg-emerald-500/20 text-emerald-400' : isDraw ? 'bg-slate-500/20 text-slate-400' : 'bg-red-500/20 text-red-400';
-                      const resultText = isWinner ? 'Win' : isDraw ? 'Draw' : 'Loss';
-                      const diffLabel = match.botDifficulty ? BOT_DIFFICULTY_LABELS[match.botDifficulty] : '';
-                      const diffColor = match.botDifficulty ? BOT_DIFFICULTY_COLORS[match.botDifficulty] : '';
-
-                      return (
-                        <tr key={match.id} className="hover:bg-slate-700/20 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              {match.isBotMatch ? (
-                                <>
-                                  <span className="text-white font-medium">Computer</span>
-                                  {diffLabel && (
-                                    <span className={cn('text-xs px-1.5 py-0.5 rounded border font-semibold', diffColor)}>
-                                      {diffLabel}
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-white font-medium">
-                                  {isPlayerX ? match.player_o_name : match.player_x_name || 'Player'}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${resultColor}`}>{resultText}</span>
-                          </td>
-                          <td className="p-4 text-slate-300 font-mono hidden sm:table-cell">{match.moves_count}</td>
-                          <td className="p-4 text-slate-300 capitalize hidden md:table-cell">{match.status}</td>
-                          <td className="p-4 text-slate-400 font-mono text-sm hidden sm:table-cell">{formatDate(match.created_at)}</td>
-                          <td className="p-4">
-                            <Link
-                              to={`/review/${match.id}`}
-                              className="px-3 py-1.5 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
-                            >
-                              Review
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-bold text-white">
+                {(profile?.displayName ?? user?.displayName ?? '?').charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-slate-100">
+                {profile?.displayName ?? user?.displayName ?? 'Player'}
+              </p>
+              <p className="text-xs text-slate-500">Signed in with Google</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Custom Game Modal */}
-      {showQuickMatch && user && (
-        <QuickMatchOverlay
-          socket={socket}
-          userId={user.uid}
-          onCancel={() => setShowQuickMatch(false)}
-        />
-      )}
-
-      {showCustomModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700 shadow-2xl"
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-slate-800 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
           >
-            <h3 className="text-2xl font-bold text-white mb-4">Custom Game</h3>
+            <LogOut size={16} aria-hidden="true" />
+            <span className="hidden sm:inline">Sign out</span>
+            <span className="sr-only sm:hidden">Sign out</span>
+          </button>
+        </header>
 
-            <div className="flex gap-2 mb-6 p-1 bg-slate-900/50 rounded-lg">
-              <button
-                onClick={() => setGameMode('bot')}
-                className={cn(
-                  "flex-1 py-2 text-sm font-medium rounded-md transition-colors",
-                  gameMode === 'bot' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-                )}
-              >
-                Play Bot
-              </button>
-              <button
-                onClick={() => setGameMode('friend')}
-                className={cn(
-                  "flex-1 py-2 text-sm font-medium rounded-md transition-colors",
-                  gameMode === 'friend' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-                )}
-              >
-                Play Friend
-              </button>
-            </div>
+        <ConnectionBanner connection={connection} error={socketError} />
 
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-slate-400 mb-2">Game Type</label>
-              <select
-                value={gameTypeId}
-                onChange={e => setGameTypeId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-              >
-                {gameTypes.map(g => (
-                  <option key={g.gt_id} value={g.gt_id}>
-                    {g.type_name} {g.is_ranked ? '· Ranked' : '· Casual'}
-                  </option>
-                ))}
-              </select>
-              {gameTypeId && (
-                <p className="text-xs text-slate-500 mt-1.5">
-                  {gameTypes.find(g => g.gt_id === gameTypeId)?.description}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6 grid gap-3 sm:grid-cols-2"
+        >
+          <button
+            type="button"
+            onClick={() => createMatch('pvp')}
+            disabled={!ready || pending !== null}
+            className="group flex flex-col items-start gap-2 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-600/25 to-indigo-800/10 p-5 text-left transition hover:border-indigo-400 hover:from-indigo-600/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/25 text-indigo-200">
+              {pending === 'create' ? <Spinner size="sm" inline label="Creating" /> : <Plus size={20} aria-hidden="true" />}
+            </span>
+            <span className="font-semibold text-slate-100">Create a game</span>
+            <span className="text-sm text-slate-400">Get a code to share with a friend.</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => createMatch('bot', 3)}
+            disabled={!ready || pending !== null}
+            className="group flex flex-col items-start gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-5 text-left transition hover:border-slate-600 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700/60 text-slate-300">
+              {pending === 'bot' ? <Spinner size="sm" inline label="Starting" /> : <Bot size={20} aria-hidden="true" />}
+            </span>
+            <span className="font-semibold text-slate-100">Play the computer</span>
+            <span className="text-sm text-slate-400">
+              Practice on your own. Not counted in your record.
+            </span>
+          </button>
+        </motion.section>
+
+        <section className="mb-6 rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
+          <h2 className="mb-3 flex items-center gap-2 font-semibold text-slate-100">
+            <Users size={18} aria-hidden="true" />
+            Join with a code
+          </h2>
+          <form onSubmit={joinMatch} className="flex flex-col gap-3 sm:flex-row">
+            <label htmlFor="room-code" className="sr-only">
+              Game code
+            </label>
+            <input
+              id="room-code"
+              value={code}
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="ABC123"
+              maxLength={6}
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              aria-invalid={joinError !== null}
+              aria-describedby={joinError ? 'join-error' : undefined}
+              className="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-center font-mono text-lg tracking-[0.3em] text-slate-100 placeholder:tracking-normal placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+            />
+            <button
+              type="submit"
+              disabled={!ready || code.trim().length < 4 || pending !== null}
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {pending === 'join' ? 'Joining…' : 'Join'}
+            </button>
+          </form>
+          {joinError && (
+            <p id="join-error" role="alert" className="mt-3 text-sm text-red-300">
+              {joinError}
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
+          <h2 className="mb-4 font-semibold text-slate-100">Your record</h2>
+          {statsLoading && !profile ? (
+            <Spinner label="Loading your record" />
+          ) : (
+            <>
+              <dl className="mb-5 grid grid-cols-4 gap-3 text-center">
+                <Stat label="Played" value={profile?.matchesPlayed ?? 0} />
+                <Stat label="Won" value={profile?.wins ?? 0} tone="text-emerald-300" />
+                <Stat label="Lost" value={profile?.losses ?? 0} tone="text-rose-300" />
+                <Stat label="Drawn" value={profile?.draws ?? 0} />
+              </dl>
+
+              {recent.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No games yet. Create one and send the code to a friend.
                 </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {recent.slice(0, 5).map(match => (
+                    <li
+                      key={match.id}
+                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-900/50 px-3 py-2 text-sm"
+                    >
+                      <span className="truncate text-slate-300">vs {match.opponentName}</span>
+                      <span
+                        className={
+                          match.outcome === 'win'
+                            ? 'shrink-0 font-medium text-emerald-300'
+                            : match.outcome === 'loss'
+                              ? 'shrink-0 font-medium text-rose-300'
+                              : 'shrink-0 font-medium text-slate-400'
+                        }
+                      >
+                        {match.outcome === 'win' ? 'Won' : match.outcome === 'loss' ? 'Lost' : 'Drew'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </div>
+            </>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
 
-            {gameMode === 'bot' && (
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
-                    Difficulty: <span className="text-indigo-600 font-bold">{difficultyLabels[botDifficulty]}</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="1" max="5"
-                    value={botDifficulty}
-                    onChange={(e) => setBotDifficulty(parseInt(e.target.value))}
-                    className="w-full accent-indigo-500"
-                  />
-                  <div className="flex justify-between text-xs text-slate-500 mt-1 font-mono">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {gameMode === 'friend' && (
-              <div className="mb-6 text-sm text-slate-400 text-center">
-                Create a private match and share the link with a friend!
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCustomModal(false)}
-                className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={gameMode === 'bot' ? createBotMatch : createPrivateMatch}
-                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/20"
-              >
-                Start Game
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
+  return (
+    <div className="rounded-xl bg-slate-900/50 py-3">
+      <dd className={`text-2xl font-bold ${tone ?? 'text-slate-100'}`}>{value}</dd>
+      <dt className="text-xs text-slate-500">{label}</dt>
     </div>
   );
 }

@@ -467,7 +467,7 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
 
       // Simple sliding window: 5 messages per 10 seconds.
       const now = Date.now();
-      socket.data.chatTimes = socket.data.chatTimes.filter(t => now - t < 10_000);
+      socket.data.chatTimes = socket.data.chatTimes.filter((t: number) => now - t < 10_000);
       if (socket.data.chatTimes.length >= 5) {
         fail(socket, 'RATE_LIMITED', 'You are sending messages too quickly.');
         return;

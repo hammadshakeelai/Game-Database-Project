@@ -363,3 +363,21 @@ textarea::placeholder {
 }
 .minimalist .bg-slate-900 { background-color: var(--bg-color) !important; color: var(--text-color) !important; }
 .minimalist .bg-slate-800 { background-color: var(--board-bg) !important; border: 1px solid #e2e8f0; box-shadow: none !important; }
+
+/* Display face for the wordmark. Falls back cleanly if Orbitron is blocked. */
+.ttt-display {
+  font-family: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Honour the operating system's reduced-motion preference throughout. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
