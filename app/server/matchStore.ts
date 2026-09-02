@@ -1,6 +1,9 @@
 import { createInitialState } from '../src/gameLogic.js';
 import type { GameState } from '../src/types.js';
 
+/** Reserved uid for the built-in computer opponent. */
+export const BOT_UID = 'BOT';
+
 export type Mark = 'X' | 'O';
 export type MatchMode = 'pvp' | 'bot';
 export type MatchStatus = 'waiting' | 'active' | 'finished';
@@ -83,7 +86,7 @@ export class MatchStore {
 
     const bot: MatchPlayer | null =
       opts.mode === 'bot'
-        ? { uid: 'BOT', name: 'Computer', photoURL: null, socketId: null, disconnectedAt: null }
+        ? { uid: BOT_UID, name: 'Computer', photoURL: null, socketId: null, disconnectedAt: null }
         : null;
 
     const match: Match = {

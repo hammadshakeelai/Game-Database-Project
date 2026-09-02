@@ -541,6 +541,15 @@ describe('chat', () => {
 });
 
 describe('play against the computer', () => {
+  it('never shows the computer as disconnected', async () => {
+    const a = await harness.connect(await createTestUser('BotPresence'));
+    const { match } = await emitAck<AckOk>(a, 'create_match', { mode: 'bot' });
+    // The computer has no socket, so a naive socketId check reported it as
+    // permanently reconnecting in the UI.
+    expect(match.players.O!.connected).toBe(true);
+    a.disconnect();
+  });
+
   it('answers the player move with a bot move', async () => {
     const a = await harness.connect(await createTestUser('Solo'));
     const { match } = await emitAck<AckOk>(a, 'create_match', { mode: 'bot', botDifficulty: 2 });

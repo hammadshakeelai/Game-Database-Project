@@ -3,6 +3,7 @@ import { applyMove, isValidMove } from '../src/gameLogic.js';
 import { evaluateMoveAccuracy, getBestMove, getEvaluation } from '../src/aiEvaluator.js';
 import type { Move } from '../src/types.js';
 import {
+  BOT_UID,
   MatchStore,
   RECONNECT_GRACE_MS,
   type Mark,
@@ -58,7 +59,10 @@ function publicPlayer(p: MatchPlayer | null) {
     uid: p.uid,
     name: p.name,
     photoURL: p.photoURL,
-    connected: p.socketId !== null,
+    // The computer has no socket by definition, so a plain socketId check
+    // would report it as permanently disconnected. It runs in this process
+    // and is always available.
+    connected: p.uid === BOT_UID ? true : p.socketId !== null,
   };
 }
 
@@ -111,7 +115,7 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
    */
   function scheduleBotMove(match: Match): void {
     if (match.mode !== 'bot' || match.status !== 'active') return;
-    const botMark = match.players.X?.uid === 'BOT' ? 'X' : 'O';
+    const botMark = match.players.X?.uid === BOT_UID ? 'X' : 'O';
     if (match.state.currentPlayer !== botMark) return;
 
     const delay = Math.max(350, 900 - match.botDifficulty * 100);
