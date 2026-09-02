@@ -168,30 +168,26 @@ OAuth screens would be fragile and is not something to script.
 
 ## Deployment
 
-The app is one Node process: Express serves the built SPA _and_ hosts the game
-server, so it deploys as a single service.
+The Firebase project is already set up, verified against live infrastructure,
+and documented in **[docs/deployment.md](../docs/deployment.md)** — read that for
+the exact remaining steps and the environment values to paste.
 
-[`render.yaml`](../render.yaml) in the repository root is a ready Render
-Blueprint. Connect the repository in Render and it will pick it up.
+In short: the app is one Node process (Express serves the SPA _and_ runs the
+game server), so it needs a host that keeps a process alive — serverless will
+not work, because game state lives in that process's memory.
+[`render.yaml`](../render.yaml) is committed so Render configures itself.
 
-**These steps need console access and cannot be automated:**
+Three things still need a human:
 
-1. **Firebase console** → create a project (or reuse one).
-2. **Authentication** → Sign-in method → enable **Google**.
-3. **Authentication** → Settings → Authorised domains → add your Render domain
-   (`your-app.onrender.com`). Without this, sign-in fails with
-   `auth/unauthorized-domain`.
-4. **Firestore Database** → create it in production mode.
-5. **Project settings → Service accounts** → generate a private key. Paste the
-   JSON as one line into Render's `FIREBASE_SERVICE_ACCOUNT` environment variable.
-6. **Project settings → Your apps → Web** → copy the config values into the
-   `VITE_FIREBASE_*` variables in Render.
-7. Set `CLIENT_ORIGIN` to your Render URL.
-8. Deploy the rules: `npx firebase deploy --only firestore:rules`.
+1. **Enable Google sign-in** in the Firebase console. This has no API — Google
+   provides no public endpoint to create the required OAuth 2.0 client.
+2. **Create the Render service** from the blueprint and set the env vars.
+3. **Add the Render domain** to Firebase Authorised domains, or sign-in fails
+   with `auth/unauthorized-domain`.
 
-> Render's free tier sleeps after 15 minutes with no traffic, so the first
-> visitor after a quiet spell waits roughly a minute for a cold start. An
-> occupied game keeps itself awake through the socket heartbeat.
+> Render's free tier sleeps after 15 minutes idle, so the first visitor after a
+> quiet spell waits about a minute. An occupied game stays awake via the socket
+> heartbeat.
 
 ## Project structure
 

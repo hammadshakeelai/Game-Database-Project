@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "match_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerX", "order": "ASCENDING" },
+        { "fieldPath": "finishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "match_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerO", "order": "ASCENDING" },
+        { "fieldPath": "finishedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
