@@ -139,7 +139,7 @@ export function applyMoveFast(state: GameState, move: Move): GameState {
 
   // Determine next required sub-board
   let nextRequired: number | null = null;
-  let nextPlayer: 'X' | 'O' = player === 'X' ? 'O' : 'X';
+  const nextPlayer: 'X' | 'O' = player === 'X' ? 'O' : 'X';
 
   if (superWinner === null) {
     const nextSubBoard = subGridIndex;

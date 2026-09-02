@@ -1,0 +1,42 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# The app ships as one Node process: Express serves the built SPA and hosts the
+# authoritative socket.io game server. A single always-on instance is exactly
+# the right shape, because game state lives in that process's memory and
+# socket.io needs a persistent connection.
+services:
+  - type: web
+    name: super-tic-tac-toe
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: app
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      # Secret. Set in the Render dashboard, never in this file.
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      # The public URL of this service, for the socket CORS allowlist.
+      - key: CLIENT_ORIGIN
+        sync: false
+      # Firebase web config. Public identifiers, but kept as env so the same
+      # source can target a different project.
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false

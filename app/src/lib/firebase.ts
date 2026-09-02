@@ -109,3 +109,30 @@ export async function signInWithGoogle(): Promise<void> {
 export async function signOutUser(): Promise<void> {
   await signOut(getFirebaseAuth());
 }
+
+/**
+ * Test-only sign-in bridge.
+ *
+ * End-to-end tests need a signed-in session, but automating Google's real OAuth
+ * screens would be both fragile and inappropriate. Instead the tests run against
+ * the Firebase Auth emulator and call this.
+ *
+ * This is installed ONLY when VITE_AUTH_EMULATOR_HOST is set, which is never
+ * true in a production build — so the bridge cannot exist in a deployed app.
+ */
+if (import.meta.env.VITE_AUTH_EMULATOR_HOST) {
+  (window as unknown as Record<string, unknown>).__signInForTests = async (
+    email: string,
+    password: string,
+  ) => {
+    const { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } =
+      await import('firebase/auth');
+    const auth = getFirebaseAuth();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: email.split('@')[0] });
+    }
+  };
+}
