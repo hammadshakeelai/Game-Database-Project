@@ -26,7 +26,7 @@ afterAll(async () => {
 /** Create a pvp room hosted by `host` and joined by `guest`. */
 async function makeGame(host: ClientSocket, guest: ClientSocket) {
   const created = (await emitAck<AckOk>(host, 'create_match', { mode: 'pvp' })).match;
-  const joined = (await emitAck<AckOk | AckErr>(guest, 'join_match', { matchId: created.id }));
+  const joined = await emitAck<AckOk | AckErr>(guest, 'join_match', { matchId: created.id });
   expect(joined.ok).toBe(true);
   return { matchId: created.id, guestView: (joined as AckOk).match };
 }
@@ -116,6 +116,20 @@ describe('rooms', () => {
     const again = await emitAck<AckOk>(a, 'join_match', { matchId });
     expect(again.match.role).toBe('X');
     expect(again.match.players.X!.uid).toBe(alice.uid);
+  });
+
+  it('accepts every later action for a room joined via a lower-case link', async () => {
+    // An invite URL can be shared in any casing. Joining used to normalise but
+    // subsequent actions did not, so a lower-case link joined fine and then
+    // failed on the first move with "this game no longer exists".
+    const { match } = await emitAck<AckOk>(a, 'create_match', { mode: 'pvp' });
+    const lower = match.id.toLowerCase();
+    const joined = await emitAck<AckOk>(b, 'join_match', { matchId: lower });
+    expect(joined.ok).toBe(true);
+
+    const seen = waitFor<{ move: { player: string } }>(b, 'move_made');
+    a.emit('make_move', { matchId: match.id.toLowerCase(), superGridIndex: 4, subGridIndex: 4 });
+    expect((await seen).move.player).toBe('X');
   });
 
   it('rejects a malformed join payload', async () => {
@@ -366,7 +380,9 @@ describe('rematch', () => {
     const originalO = finished.players.O!.uid;
 
     // One request alone does not start a new game.
-    const pending = await emitAck<{ ok: boolean; pending?: boolean }>(a, 'request_rematch', { matchId });
+    const pending = await emitAck<{ ok: boolean; pending?: boolean }>(a, 'request_rematch', {
+      matchId,
+    });
     expect(pending.pending).toBe(true);
     await expectNoEvent(a, 'rematch_ready');
 

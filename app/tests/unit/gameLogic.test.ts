@@ -34,7 +34,11 @@ describe('checkWinner', () => {
   const empty = Array(9).fill(null);
 
   it('detects each of the three rows', () => {
-    for (const [a, b, c] of [[0, 1, 2], [3, 4, 5], [6, 7, 8]]) {
+    for (const [a, b, c] of [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+    ]) {
       const board = [...empty];
       board[a] = board[b] = board[c] = 'X';
       expect(checkWinner(board)).toBe('X');
@@ -42,7 +46,11 @@ describe('checkWinner', () => {
   });
 
   it('detects each of the three columns', () => {
-    for (const [a, b, c] of [[0, 3, 6], [1, 4, 7], [2, 5, 8]]) {
+    for (const [a, b, c] of [
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+    ]) {
       const board = [...empty];
       board[a] = board[b] = board[c] = 'O';
       expect(checkWinner(board)).toBe('O');
@@ -50,7 +58,10 @@ describe('checkWinner', () => {
   });
 
   it('detects both diagonals', () => {
-    for (const [a, b, c] of [[0, 4, 8], [2, 4, 6]]) {
+    for (const [a, b, c] of [
+      [0, 4, 8],
+      [2, 4, 6],
+    ]) {
       const board = [...empty];
       board[a] = board[b] = board[c] = 'X';
       expect(checkWinner(board)).toBe('X');
@@ -81,7 +92,9 @@ describe('createInitialState', () => {
     expect(state.nextRequiredSubBoard).toBeNull();
     expect(state.moves).toHaveLength(0);
     expect(state.superBoard).toHaveLength(9);
-    expect(state.superBoard.every(sub => sub.length === 9 && sub.every(c => c === null))).toBe(true);
+    expect(state.superBoard.every(sub => sub.length === 9 && sub.every(c => c === null))).toBe(
+      true,
+    );
     expect(state.subBoardWinners.every(w => w === null)).toBe(true);
   });
 });
@@ -177,7 +190,11 @@ describe('applyMove', () => {
   });
 
   it('records every move in order', () => {
-    const state = play(createInitialState(), [[0, 1], [1, 0], [0, 2]]);
+    const state = play(createInitialState(), [
+      [0, 1],
+      [1, 0],
+      [0, 2],
+    ]);
     expect(state.moves).toHaveLength(3);
     expect(state.moves[0]).toEqual({ superGridIndex: 0, subGridIndex: 1, player: 'X' });
     expect(state.moves[2]!.player).toBe('X');
@@ -192,7 +209,11 @@ describe('applyMove', () => {
 
   it('marks a sub-board winner without ending the game', () => {
     const state = play(createInitialState(), [
-      [4, 0], [0, 4], [4, 1], [1, 4], [4, 2],
+      [4, 0],
+      [0, 4],
+      [4, 1],
+      [1, 4],
+      [4, 2],
     ]);
     expect(state.subBoardWinners[4]).toBe('X');
     expect(state.winner).toBeNull();
@@ -253,7 +274,10 @@ describe('applyMove', () => {
 
 describe('cloneGameState', () => {
   it('produces an independent copy', () => {
-    const original = play(createInitialState(), [[0, 1], [1, 0]]);
+    const original = play(createInitialState(), [
+      [0, 1],
+      [1, 0],
+    ]);
     const copy = cloneGameState(original);
 
     expect(copy).toEqual(original);
@@ -269,7 +293,13 @@ describe('cloneGameState', () => {
 
 describe('rematch reset', () => {
   it('createInitialState gives a clean board after a finished game', () => {
-    const finished = play(createInitialState(), [[4, 0], [0, 4], [4, 1], [1, 4], [4, 2]]);
+    const finished = play(createInitialState(), [
+      [4, 0],
+      [0, 4],
+      [4, 1],
+      [1, 4],
+      [4, 2],
+    ]);
     expect(finished.moves.length).toBeGreaterThan(0);
 
     const fresh = createInitialState();

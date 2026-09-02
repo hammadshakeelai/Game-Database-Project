@@ -107,7 +107,11 @@ export default function LobbyPage() {
             className="group flex flex-col items-start gap-2 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-600/25 to-indigo-800/10 p-5 text-left transition hover:border-indigo-400 hover:from-indigo-600/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/25 text-indigo-200">
-              {pending === 'create' ? <Spinner size="sm" inline label="Creating" /> : <Plus size={20} aria-hidden="true" />}
+              {pending === 'create' ? (
+                <Spinner size="sm" inline label="Creating" />
+              ) : (
+                <Plus size={20} aria-hidden="true" />
+              )}
             </span>
             <span className="font-semibold text-slate-100">Create a game</span>
             <span className="text-sm text-slate-400">Get a code to share with a friend.</span>
@@ -120,7 +124,11 @@ export default function LobbyPage() {
             className="group flex flex-col items-start gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-5 text-left transition hover:border-slate-600 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700/60 text-slate-300">
-              {pending === 'bot' ? <Spinner size="sm" inline label="Starting" /> : <Bot size={20} aria-hidden="true" />}
+              {pending === 'bot' ? (
+                <Spinner size="sm" inline label="Starting" />
+              ) : (
+                <Bot size={20} aria-hidden="true" />
+              )}
             </span>
             <span className="font-semibold text-slate-100">Play the computer</span>
             <span className="text-sm text-slate-400">
@@ -200,7 +208,11 @@ export default function LobbyPage() {
                               : 'shrink-0 font-medium text-slate-400'
                         }
                       >
-                        {match.outcome === 'win' ? 'Won' : match.outcome === 'loss' ? 'Lost' : 'Drew'}
+                        {match.outcome === 'win'
+                          ? 'Won'
+                          : match.outcome === 'loss'
+                            ? 'Lost'
+                            : 'Drew'}
                       </span>
                     </li>
                   ))}

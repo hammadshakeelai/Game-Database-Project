@@ -60,14 +60,13 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export type SignInFailure =
-  | 'popup-blocked'
-  | 'cancelled'
-  | 'unauthorized-domain'
-  | 'network'
-  | 'unknown';
+  'popup-blocked' | 'cancelled' | 'unauthorized-domain' | 'network' | 'unknown';
 
 export class SignInError extends Error {
-  constructor(readonly kind: SignInFailure, message: string) {
+  constructor(
+    readonly kind: SignInFailure,
+    message: string,
+  ) {
     super(message);
     this.name = 'SignInError';
   }
@@ -86,7 +85,10 @@ export async function signInWithGoogle(): Promise<void> {
   } catch (err) {
     const code = (err as { code?: string }).code ?? '';
 
-    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+    if (
+      code === 'auth/popup-blocked' ||
+      code === 'auth/operation-not-supported-in-this-environment'
+    ) {
       await signInWithRedirect(auth, googleProvider);
       return;
     }
@@ -100,7 +102,10 @@ export async function signInWithGoogle(): Promise<void> {
       );
     }
     if (code === 'auth/network-request-failed') {
-      throw new SignInError('network', 'Could not reach the sign-in service. Check your connection.');
+      throw new SignInError(
+        'network',
+        'Could not reach the sign-in service. Check your connection.',
+      );
     }
     throw new SignInError('unknown', 'Sign-in failed. Please try again.');
   }

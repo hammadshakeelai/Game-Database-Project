@@ -69,7 +69,9 @@ export default function GamePage() {
   }
 
   if (expired) {
-    return <Centered title="Game expired" body="This game was inactive for too long and has closed." />;
+    return (
+      <Centered title="Game expired" body="This game was inactive for too long and has closed." />
+    );
   }
 
   if (!match) return <Centered title="Game unavailable" body="Please go back and try again." />;
@@ -79,7 +81,9 @@ export default function GamePage() {
     match.role === 'spectator' ? null : match.players[match.role === 'X' ? 'O' : 'X'];
   const isMyTurn = match.status === 'active' && match.state.currentPlayer === match.role;
   const drawOfferedToMe =
-    match.drawOfferedBy !== null && match.drawOfferedBy !== match.role && match.role !== 'spectator';
+    match.drawOfferedBy !== null &&
+    match.drawOfferedBy !== match.role &&
+    match.role !== 'spectator';
   const iRequestedRematch =
     match.role !== 'spectator' && match.rematchRequestedBy.includes(match.role);
 
@@ -163,12 +167,7 @@ export default function GamePage() {
 
         {match.status === 'active' && match.role !== 'spectator' && (
           <div className="flex flex-wrap justify-center gap-2">
-            <button
-              type="button"
-              onClick={requestHint}
-              disabled={!isMyTurn}
-              className={btnGhost}
-            >
+            <button type="button" onClick={requestHint} disabled={!isMyTurn} className={btnGhost}>
               <Lightbulb size={16} aria-hidden="true" /> Hint
             </button>
             {match.mode === 'pvp' && (
@@ -245,10 +244,17 @@ function PlayerChip({
 }) {
   const tone = mark === 'X' ? 'text-indigo-300' : 'text-rose-300';
   return (
-    <div className={`flex min-w-0 flex-1 items-center gap-2.5 ${alignEnd ? 'flex-row-reverse text-right' : ''}`}>
+    <div
+      className={`flex min-w-0 flex-1 items-center gap-2.5 ${alignEnd ? 'flex-row-reverse text-right' : ''}`}
+    >
       <div className="relative shrink-0">
         {player?.photoURL ? (
-          <img src={player.photoURL} alt="" className="h-9 w-9 rounded-full" referrerPolicy="no-referrer" />
+          <img
+            src={player.photoURL}
+            alt=""
+            className="h-9 w-9 rounded-full"
+            referrerPolicy="no-referrer"
+          />
         ) : (
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-slate-300">
             {(player?.name ?? '?').charAt(0).toUpperCase()}
@@ -337,9 +343,16 @@ function ResultPanel({
   canRematch: boolean;
   opponentName: string;
 }) {
-  const outcome = winner === 'Draw' ? 'draw' : myMark === null ? 'other' : winner === myMark ? 'win' : 'loss';
+  const outcome =
+    winner === 'Draw' ? 'draw' : myMark === null ? 'other' : winner === myMark ? 'win' : 'loss';
   const heading =
-    outcome === 'draw' ? 'Draw' : outcome === 'win' ? 'You won' : outcome === 'loss' ? 'You lost' : `${winner} won`;
+    outcome === 'draw'
+      ? 'Draw'
+      : outcome === 'win'
+        ? 'You won'
+        : outcome === 'loss'
+          ? 'You lost'
+          : `${winner} won`;
   const detail =
     reason === 'resign'
       ? outcome === 'win'
@@ -361,7 +374,11 @@ function ResultPanel({
     >
       <h2
         className={`mb-1 text-2xl font-black ${
-          outcome === 'win' ? 'text-emerald-300' : outcome === 'loss' ? 'text-rose-300' : 'text-slate-100'
+          outcome === 'win'
+            ? 'text-emerald-300'
+            : outcome === 'loss'
+              ? 'text-rose-300'
+              : 'text-slate-100'
         }`}
       >
         {heading}
@@ -369,7 +386,12 @@ function ResultPanel({
       <p className="mb-5 text-sm text-slate-400">{detail}</p>
       <div className="flex flex-wrap justify-center gap-2">
         {canRematch && (
-          <button type="button" onClick={onRematch} disabled={rematchPending} className={btnPrimary}>
+          <button
+            type="button"
+            onClick={onRematch}
+            disabled={rematchPending}
+            className={btnPrimary}
+          >
             {rematchPending ? 'Waiting for opponent…' : 'Rematch'}
           </button>
         )}

@@ -12,9 +12,15 @@ import type { Role } from './types';
  */
 
 const POSITION_NAMES = [
-  'top left', 'top centre', 'top right',
-  'middle left', 'centre', 'middle right',
-  'bottom left', 'bottom centre', 'bottom right',
+  'top left',
+  'top centre',
+  'top right',
+  'middle left',
+  'centre',
+  'middle right',
+  'bottom left',
+  'bottom centre',
+  'bottom right',
 ];
 
 interface BoardProps {

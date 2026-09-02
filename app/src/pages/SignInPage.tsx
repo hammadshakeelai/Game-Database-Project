@@ -37,9 +37,9 @@ export default function SignInPage() {
         <div className="max-w-md rounded-2xl border border-slate-700 bg-slate-800 p-6 text-center">
           <h1 className="mb-2 text-xl font-bold text-slate-100">Not configured yet</h1>
           <p className="text-sm text-slate-400">
-            This deployment is missing its Firebase settings, so sign-in is unavailable.
-            See <code className="text-indigo-300">.env.example</code> in the repository for the
-            values it needs.
+            This deployment is missing its Firebase settings, so sign-in is unavailable. See{' '}
+            <code className="text-indigo-300">.env.example</code> in the repository for the values
+            it needs.
           </p>
         </div>
       </main>

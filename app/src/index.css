@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ============================================================
    Dark Royal palette — deep purple-black background,
@@ -85,7 +85,7 @@
   --color-blue-400: #6c84c0;
   --color-blue-500: #4d68a4;
 
-  --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ============================================================
@@ -105,7 +105,7 @@ body {
   /* Ivory warmth in the corners + purple glow opposite — keeps the
      room feeling lit rather than pitch-black. */
   background-image:
-    radial-gradient(circle at 15% 0%,   rgba(244, 236, 217, 0.10), transparent 55%),
+    radial-gradient(circle at 15% 0%, rgba(244, 236, 217, 0.1), transparent 55%),
     radial-gradient(circle at 85% 100%, rgba(139, 101, 200, 0.18), transparent 55%);
   background-attachment: fixed;
 }
@@ -115,8 +115,13 @@ body {
   color: var(--color-slate-100);
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
   background: rgba(168, 132, 212, 0.25);
   border-radius: 4px;
@@ -145,7 +150,9 @@ body {
   border-color: rgba(244, 236, 217, 0.08);
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   color: var(--color-slate-100);
   background-color: var(--color-slate-900);
 }
@@ -160,24 +167,45 @@ textarea::placeholder {
    ============================================================ */
 
 @keyframes board-pulse {
-  0%, 100% { box-shadow: 0 0 14px rgba(139, 101, 200, 0.35); }
-  50%      { box-shadow: 0 0 28px rgba(139, 101, 200, 0.65); }
+  0%,
+  100% {
+    box-shadow: 0 0 14px rgba(139, 101, 200, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(139, 101, 200, 0.65);
+  }
 }
 
 @keyframes hint-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(111, 166, 210, 0.5); }
-  50%      { box-shadow: 0 0 22px rgba(111, 166, 210, 0.85); }
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(111, 166, 210, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(111, 166, 210, 0.85);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes gradient-shift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .animate-gradient-text {
@@ -191,22 +219,22 @@ textarea::placeholder {
    ============================================================ */
 
 .bright {
-  --color-slate-900: #f1ead7;  /* page = ivory */
-  --color-slate-800: #faf4e3;  /* card = cream */
-  --color-slate-700: #e2d8bd;  /* border = warm tan */
+  --color-slate-900: #f1ead7; /* page = ivory */
+  --color-slate-800: #faf4e3; /* card = cream */
+  --color-slate-700: #e2d8bd; /* border = warm tan */
   --color-slate-600: #c0b497;
   --color-slate-500: #8a7d6a;
   --color-slate-400: #635742;
   --color-slate-300: #443a55;
   --color-slate-200: #2d2440;
-  --color-slate-100: #1d1530;  /* ink-dark text */
+  --color-slate-100: #1d1530; /* ink-dark text */
 }
 
 .bright body {
   background-color: var(--color-slate-900);
   color: var(--color-slate-100);
   background-image:
-    radial-gradient(circle at 15% 0%,   rgba(99, 54, 160, 0.06), transparent 55%),
+    radial-gradient(circle at 15% 0%, rgba(99, 54, 160, 0.06), transparent 55%),
     radial-gradient(circle at 85% 100%, rgba(184, 136, 48, 0.08), transparent 55%);
 }
 
@@ -231,12 +259,12 @@ textarea::placeholder {
 .bright .bg-rose-600.text-white,
 .bright .bg-red-500.text-white,
 .bright .bg-red-600.text-white,
-.bright [class*="from-indigo-"].text-white,
-.bright [class*="from-violet-"].text-white,
-.bright [class*="from-emerald-"].text-white,
-.bright [class*="from-rose-"].text-white,
-.bright [class*="from-red-"].text-white,
-.bright [class*="from-purple-"].text-white {
+.bright [class*='from-indigo-'].text-white,
+.bright [class*='from-violet-'].text-white,
+.bright [class*='from-emerald-'].text-white,
+.bright [class*='from-rose-'].text-white,
+.bright [class*='from-red-'].text-white,
+.bright [class*='from-purple-'].text-white {
   color: #faf4e3;
 }
 
@@ -254,11 +282,11 @@ textarea::placeholder {
 
 :root {
   --ttt-board-grad: linear-gradient(135deg, #0a0610 0%, #1a0f08 50%, #0a0610 100%);
-  --ttt-cell-grad:  linear-gradient(160deg, #1a120a 0%, #0e0816 100%);
+  --ttt-cell-grad: linear-gradient(160deg, #1a120a 0%, #0e0816 100%);
   --ttt-cell-hover: linear-gradient(160deg, #261a10 0%, #170c22 100%);
-  --ttt-silver:     #c9c2b3;
+  --ttt-silver: #c9c2b3;
   --ttt-silver-dim: rgba(201, 194, 179, 0.32);
-  --ttt-purple:     #8b65c8;
+  --ttt-purple: #8b65c8;
   --ttt-purple-glow: rgba(139, 101, 200, 0.55);
   --ttt-brown-trim: rgba(122, 80, 40, 0.45);
 }
@@ -276,7 +304,9 @@ textarea::placeholder {
   background: #0a0610;
   border: 1px solid var(--ttt-silver-dim);
   box-shadow: 0 0 0 1px var(--ttt-brown-trim) inset;
-  transition: box-shadow 250ms ease, border-color 250ms ease;
+  transition:
+    box-shadow 250ms ease,
+    border-color 250ms ease;
 }
 
 .ttt-subboard.active {
@@ -287,7 +317,9 @@ textarea::placeholder {
     0 0 0 2px rgba(139, 101, 200, 0.4);
 }
 
-.ttt-subboard.dim { opacity: 0.55; }
+.ttt-subboard.dim {
+  opacity: 0.55;
+}
 
 .ttt-subboard-overlay {
   background: rgba(10, 6, 16, 0.85);
@@ -298,7 +330,10 @@ textarea::placeholder {
   background: var(--ttt-cell-grad);
   border: 1px solid rgba(201, 194, 179, 0.18);
   color: var(--ttt-silver);
-  transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 120ms ease;
 }
 
 .ttt-cell.playable:hover:not(:disabled) {
@@ -321,12 +356,27 @@ textarea::placeholder {
     0 0 18px rgba(201, 194, 179, 0.3);
 }
 
-.ttt-overlay-x { color: var(--ttt-purple);  text-shadow: 0 0 14px var(--ttt-purple-glow); }
-.ttt-overlay-o { color: var(--ttt-silver);  text-shadow: 0 0 14px rgba(201, 194, 179, 0.55); }
+.ttt-overlay-x {
+  color: var(--ttt-purple);
+  text-shadow: 0 0 14px var(--ttt-purple-glow);
+}
+.ttt-overlay-o {
+  color: var(--ttt-silver);
+  text-shadow: 0 0 14px rgba(201, 194, 179, 0.55);
+}
 
-.ttt-cell.hint  { border-color: #6fa6d2; box-shadow: 0 0 12px rgba(111, 166, 210, 0.5); }
-.ttt-cell.last  { border-color: #d3a542; box-shadow: 0 0 10px rgba(211, 165, 66, 0.45); }
-.ttt-cell.best  { border-color: #79ad88; box-shadow: 0 0 10px rgba(121, 173, 136, 0.45); }
+.ttt-cell.hint {
+  border-color: #6fa6d2;
+  box-shadow: 0 0 12px rgba(111, 166, 210, 0.5);
+}
+.ttt-cell.last {
+  border-color: #d3a542;
+  box-shadow: 0 0 10px rgba(211, 165, 66, 0.45);
+}
+.ttt-cell.best {
+  border-color: #79ad88;
+  box-shadow: 0 0 10px rgba(121, 173, 136, 0.45);
+}
 
 /* ============================================================
    Alternate themes (preserved, opt-in via class on root)
@@ -339,9 +389,18 @@ textarea::placeholder {
   --x-color: #ff0000;
   --o-color: #0000ff;
 }
-.retro * { border-radius: 0 !important; box-shadow: none !important; font-family: "Courier New", Courier, monospace !important; }
-.retro .bg-slate-900 { background-color: var(--bg-color) !important; }
-.retro .bg-slate-800 { background-color: var(--board-bg) !important; border: 2px solid #fff; }
+.retro * {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: 'Courier New', Courier, monospace !important;
+}
+.retro .bg-slate-900 {
+  background-color: var(--bg-color) !important;
+}
+.retro .bg-slate-800 {
+  background-color: var(--board-bg) !important;
+  border: 2px solid #fff;
+}
 
 .neon {
   --bg-color: #050510;
@@ -350,9 +409,19 @@ textarea::placeholder {
   --x-color: #ff00ff;
   --o-color: #00ffff;
 }
-.neon * { font-family: "Orbitron", "Inter", sans-serif; }
-.neon .bg-slate-900 { background-color: var(--bg-color) !important; }
-.neon .bg-slate-800 { background-color: var(--board-bg) !important; border: 1px solid #ff00ff; box-shadow: 0 0 10px #ff00ff, inset 0 0 10px #ff00ff !important; }
+.neon * {
+  font-family: 'Orbitron', 'Inter', sans-serif;
+}
+.neon .bg-slate-900 {
+  background-color: var(--bg-color) !important;
+}
+.neon .bg-slate-800 {
+  background-color: var(--board-bg) !important;
+  border: 1px solid #ff00ff;
+  box-shadow:
+    0 0 10px #ff00ff,
+    inset 0 0 10px #ff00ff !important;
+}
 
 .minimalist {
   --bg-color: #f8fafc;
@@ -361,8 +430,15 @@ textarea::placeholder {
   --x-color: #000000;
   --o-color: #94a3b8;
 }
-.minimalist .bg-slate-900 { background-color: var(--bg-color) !important; color: var(--text-color) !important; }
-.minimalist .bg-slate-800 { background-color: var(--board-bg) !important; border: 1px solid #e2e8f0; box-shadow: none !important; }
+.minimalist .bg-slate-900 {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+.minimalist .bg-slate-800 {
+  background-color: var(--board-bg) !important;
+  border: 1px solid #e2e8f0;
+  box-shadow: none !important;
+}
 
 /* Display face for the wordmark. Falls back cleanly if Orbitron is blocked. */
 .ttt-display {

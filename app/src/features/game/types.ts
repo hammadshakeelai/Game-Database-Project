@@ -59,15 +59,15 @@ export interface MoveEvent {
 }
 
 export type JoinResult =
-  | { ok: true; match: MatchView }
-  | { ok: false; code: ErrorCode; message: string };
+  { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
 
 /**
  * Player-facing copy for each failure. The server's own message is a reasonable
  * fallback, but these are written for the specific moment the player hits them.
  */
 export const ERROR_COPY: Record<ErrorCode, string> = {
-  ROOM_NOT_FOUND: 'We could not find that game. The code may be wrong or the game may have expired.',
+  ROOM_NOT_FOUND:
+    'We could not find that game. The code may be wrong or the game may have expired.',
   ROOM_FULL: 'This game already has two players.',
   NOT_A_PLAYER: 'You are not a player in this game.',
   NOT_YOUR_TURN: 'Hold on — it is not your turn yet.',

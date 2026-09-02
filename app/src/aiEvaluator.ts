@@ -7,9 +7,14 @@ import { moveToKey } from './utils';
 // ============================================================
 
 const WINNING_COMBINATIONS = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6]
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
 ];
 
 /** Difficulty level to search depth mapping */
@@ -23,9 +28,15 @@ const DIFFICULTY_DEPTHS: Record<number, number> = {
 
 // Position-based weights for strategic importance on the super-board
 const POSITION_WEIGHTS: number[] = [
-  3, 2, 3,  // corners and edges — top row
-  2, 5, 2,  // center is most valuable
-  3, 2, 3,  // corners and edges — bottom row
+  3,
+  2,
+  3, // corners and edges — top row
+  2,
+  5,
+  2, // center is most valuable
+  3,
+  2,
+  3, // corners and edges — bottom row
 ];
 
 // ============================================================
@@ -117,9 +128,9 @@ function evaluateBoard(state: GameState, player: 'X' | 'O'): number {
     // Cell control within sub-boards
     for (let j = 0; j < 9; j++) {
       if (subBoard[j] === player) {
-        score += (j === 4 ? 2 : 1); // Center cell bonus
+        score += j === 4 ? 2 : 1; // Center cell bonus
       } else if (subBoard[j] === opponent) {
-        score -= (j === 4 ? 2 : 1);
+        score -= j === 4 ? 2 : 1;
       }
     }
   }
@@ -235,7 +246,7 @@ export function minimax(
   alpha: number,
   beta: number,
   isMaximizing: boolean,
-  player: 'X' | 'O'
+  player: 'X' | 'O',
 ): number {
   // Terminal or depth limit reached
   if (depth === 0 || state.winner !== null) {
@@ -334,15 +345,27 @@ export function getEvaluation(state: GameState): number {
 // ============================================================
 
 const CELL_NAMES = [
-  'top-left', 'top-center', 'top-right',
-  'middle-left', 'center', 'middle-right',
-  'bottom-left', 'bottom-center', 'bottom-right',
+  'top-left',
+  'top-center',
+  'top-right',
+  'middle-left',
+  'center',
+  'middle-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
 ];
 
 const BOARD_NAMES = [
-  'top-left board', 'top-center board', 'top-right board',
-  'middle-left board', 'center board', 'middle-right board',
-  'bottom-left board', 'bottom-center board', 'bottom-right board',
+  'top-left board',
+  'top-center board',
+  'top-right board',
+  'middle-left board',
+  'center board',
+  'middle-right board',
+  'bottom-left board',
+  'bottom-center board',
+  'bottom-right board',
 ];
 
 function describeMove(move: Move): string {
@@ -413,10 +436,7 @@ export function getCoachText(log: MoveAccuracyLog, bestMove: Move | null): Coach
  * Evaluate the accuracy of a move by comparing it to the best move.
  * Uses string keys instead of object references for Map lookups (fixes original bug).
  */
-export function evaluateMoveAccuracy(
-  stateBeforeMove: GameState,
-  actualMove: Move
-): AccuracyResult {
+export function evaluateMoveAccuracy(stateBeforeMove: GameState, actualMove: Move): AccuracyResult {
   const player = stateBeforeMove.currentPlayer;
   const validMoves = getValidMoves(stateBeforeMove);
 
@@ -444,12 +464,17 @@ export function evaluateMoveAccuracy(
   const actualScore = moveScores.get(actualKey);
 
   // If the actual move wasn't in valid moves (shouldn't happen), evaluate directly
-  const finalActualScore = actualScore !== undefined
-    ? actualScore
-    : minimax(
-        applyMoveFast(stateBeforeMove, actualMove),
-        evalDepth, -Infinity, Infinity, false, player
-      );
+  const finalActualScore =
+    actualScore !== undefined
+      ? actualScore
+      : minimax(
+          applyMoveFast(stateBeforeMove, actualMove),
+          evalDepth,
+          -Infinity,
+          Infinity,
+          false,
+          player,
+        );
 
   const delta = bestScore - finalActualScore;
   let label: AccuracyResult['label'] = 'Best Move';

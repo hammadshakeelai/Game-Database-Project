@@ -12,7 +12,8 @@ export function ConnectionBanner({
   connection: ConnectionState;
   error: string | null;
 }) {
-  const visible = connection === 'reconnecting' || connection === 'failed' || connection === 'connecting';
+  const visible =
+    connection === 'reconnecting' || connection === 'failed' || connection === 'connecting';
   if (!visible) return null;
 
   const failed = connection === 'failed';

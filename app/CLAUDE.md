@@ -1,63 +1,117 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
+
+## Repository shape
+
+This is a university **database course project**. Two halves:
+
+- `milestone 1/` … `milestone 4/` — graded coursework (SQL, ERDs, normalization).
+  **Frozen.** Do not restructure or move these; a grader reads them on `main`.
+- `app/` — the playable application. All engineering work goes here.
 
 ## Commands
 
+Run everything from `app/`.
+
 ```bash
-npm run dev        # Start dev server (Express + Vite middleware on port 3000)
-npm run build      # Build frontend (Vite) + bundle server (esbuild → dist/server.cjs)
-npm start          # Run production build
-npm run lint       # TypeScript type-check (tsc --noEmit) — no separate test suite
-npm run clean      # Remove dist/
+npm run dev              # Dev server (needs real Firebase config in .env)
+npm run dev:emulators    # Dev server against the Firebase emulators — prefer this
+npm run lint             # ESLint
+npm run typecheck        # tsc --noEmit (strict)
+npm test                 # Unit tests
+npm run test:integration # Socket + security-rules tests (starts emulators)
+npm run test:e2e         # Playwright
+npm run build            # Vite build + esbuild server bundle
 ```
 
-There are no automated tests. `npm run lint` is the only correctness gate — run it after changes.
+Requires Node 20+ and Java 21+ (the Firestore emulator is a Java process).
 
-The dev server is a single process: `tsx server.ts` boots Express on port 3000, which embeds Vite as middleware in dev mode and serves `dist/` in production.
+If an emulator run fails with "port taken", `npm run emulators:free` clears the
+stale Java child — the test scripts already do this first.
+
+## The game
+
+**Ultimate Tic-Tac-Toe**, not classic 3×3. Nine sub-boards inside one
+super-board. The _cell index_ of your move dictates which sub-board the opponent
+must play in (`nextRequiredSubBoard`); if that board is already decided or full,
+they may play anywhere. Three sub-boards in a line wins.
+
+Rules live in `src/gameLogic.ts` and are imported unchanged by both the client
+and the server. Do not duplicate rule logic into components.
+
+## The one invariant that matters
+
+**A user's identity comes only from `socket.data.user`, set by the handshake
+middleware in `server/index.ts` from a verified Firebase ID token.**
+
+No socket handler may read a `uid`, mark, or role out of its own payload. The
+pre-rewrite server did exactly that, which let any client act as any player.
+When adding a handler, derive the actor via `store.markOf(match, me().uid)` and
+use the existing `requirePlayer()` helper in `server/gameHandlers.ts`.
+
+Related consequences:
+
+- The client sends _intents_, never state. `make_move` carries indices only.
+- The server re-validates every move with `isValidMove`, even though the UI
+  already checked — the UI check exists only to avoid a doomed round trip.
+- Results are written to Firestore by the Admin SDK. Clients cannot write
+  `match_records` at all, and may change only `displayName` / `photoURL` on their
+  own profile. If you add a collection, add rules for it: there is a catch-all
+  deny at the bottom of `firestore.rules`.
 
 ## Architecture
 
-### Monorepo layout (flat)
-- `server.ts` — Express + Socket.io backend (one file)
-- `src/` — React SPA frontend
-- Shared game logic lives in `src/gameLogic.ts` and `src/aiEvaluator.ts`; the server imports them directly via `.js` extensions (ESM)
+```
+Browser ── Firebase Auth (Google) ──► ID token
+   │
+   └── socket.io handshake { auth: { token } }
+              │
+              ▼
+        io.use() → verifyIdToken() → socket.data.uid
+              │
+              ▼
+        MatchStore (in-memory, authoritative)
+              │
+              └──► Firestore: users/, match_records/
+```
 
-### Game logic (pure, shared client+server)
-- `src/gameLogic.ts` — All canonical state transitions: `createInitialState`, `applyMove`, `applyMoveFast`, `isValidMove`, `cloneGameState`, `checkWinner`. The server and frontend both call these same functions.
-- `src/aiEvaluator.ts` — Minimax with alpha-beta pruning. `getBestMove(state, difficulty)` (depth 1–5), `evaluateMoveAccuracy` (returns `AccuracyResult` with label + delta), `getCoachText` (human-readable explanation for review). The server runs the AI; the client only calls it for review replay.
-- `applyMoveFast` skips move history tracking — use it only in the AI hot path. `applyMove` is the canonical version for all real game state.
+| File                             | Role                                               |
+| -------------------------------- | -------------------------------------------------- |
+| `server/index.ts`                | Express, socket.io, auth handshake, REST endpoints |
+| `server/gameHandlers.ts`         | All socket events and authorization                |
+| `server/matchStore.ts`           | Rooms, codes, lifecycle, reaping                   |
+| `server/persistence.ts`          | Firestore writes; best-effort, never fatal         |
+| `src/features/game/useSocket.ts` | One authenticated socket per session               |
+| `src/features/game/useMatch.ts`  | Match state, auto re-join on reconnect             |
+| `src/features/game/Board.tsx`    | Pure board rendering                               |
 
-### State management pattern
-- `useGameState` hook owns all live game state and Socket.io event wiring. It uses **refs alongside state** (`playerRoleRef`, `gameStateRef`, `accuracyLogRef`) to avoid stale closures inside socket callbacks — follow this pattern for any new socket handlers.
-- `GameRoomPage` is the only consumer of `useGameState`; it is purely a display/orchestration layer.
+## Conventions
 
-### Auth and persistence (fully local)
-- No backend database. Auth is `localStorage`-only (keys: `sttt_users`, `sttt_session`). `AuthContext.tsx` exposes `useAuth()`, `registerWithEmail`, `loginWithEmail`, `saveLocalProfile`.
-- `ProfilePage` was previously wired to Firebase — that code is gone. Both `LobbyPage` and `ProfilePage` now read local history only.
-- Three separate localStorage namespaces written on game end (all in `GameRoomPage`'s `gameOverData` effect):
-  - `review_<matchId>` — `CompletedGameRecord` (full move list + accuracy log) for the review page
-  - `match_history_<uid>` — array of `MatchRecord` (capped at 50) for lobby/profile history display; includes `isBotMatch` and `botDifficulty`
-  - `sttt_users` — updated `UserProfile` (Elo, accuracy, W/L/D) via `saveLocalProfile`
-- After saving a profile update from any component, dispatch `window.dispatchEvent(new Event('profile-updated'))` — `AuthContext` and `LobbyPage` both listen for this to re-sync.
+- **State lives on the server.** Client state mirrors `match_update` broadcasts.
+- **Match lifecycle:** `waiting` → `active` → `finished`. Finished matches are
+  kept in memory for ten minutes so refresh and rematch work. Do not delete a
+  match on game over — that was the old bug that broke both.
+- **Errors** use the `ErrorCode` union. Add player-facing copy to `ERROR_COPY` in
+  `src/features/game/types.ts`; never surface a raw backend error.
+- **Accessibility:** turn, target board, and winner must be conveyed by text as
+  well as colour. Loading states carry labels.
+- `cn()` from `src/utils.ts` merges Tailwind classes.
+- Animations use `motion/react`. Respect the reduced-motion block in `index.css`.
 
-### Real-time flow
-1. Client emits `join_match` → server assigns role (X/O/Spectator) and responds with `match_joined` + broadcasts `match_state`
-2. Client emits `make_move` → server validates, calls `applyMove` + `evaluateMoveAccuracy`, broadcasts `move_made` to room
-3. Bot matches: server triggers `handleBotMove` after each human move; bot plays as O with a delay proportional to difficulty
-4. Game end: server emits `game_over`, deletes the `ActiveGame` from its in-memory map
-5. Stale games are cleaned up every 5 minutes (30-minute inactivity timeout)
+## Testing expectations
 
-### Review system
-`/review/:matchId` is a self-contained replay page. It reconstructs any board position by replaying `record.moves[0..n]` from `createInitialState()` — no socket connection needed. Self-review branch mode forks from the current position; branch moves are tracked separately from the main line.
+Fix the implementation, not the test. Do not reach for `any`, `ts-ignore`, or a
+disabled lint rule — ESLint treats `no-explicit-any` as an error.
 
-### Component conventions
-- `SuperBoard` → `SubBoard` are pure rendering components. `SuperBoard` accepts optional `lastMove` (amber highlight) and `bestMove` (green highlight) props used by the review page.
-- `cn()` from `utils.ts` wraps `clsx` + `tailwind-merge` — always use it for conditional class merging.
-- Animations use `motion/react` (Motion for React), not `framer-motion` directly.
+New multiplayer behaviour needs an integration test in `tests/integration/`; the
+harness gives you real sockets and real emulator-minted tokens. New rules need a
+test in `firestoreRules.test.ts`, which runs as a real client so the rules are
+actually enforced.
 
-### Bot difficulty
-Difficulty 1–5 maps to minimax search depth. Labels (`Beginner`→`Expert`) and per-level Tailwind colour strings live in `BOT_DIFFICULTY_LABELS` / `BOT_DIFFICULTY_COLORS` in `utils.ts` — import from there rather than redefining inline. The server's `game_over` event includes `botDifficulty` in `matchDetails`; the `GameOverData` type in `useGameState.ts` and `MatchDetails` in `types.ts` both carry this field.
+## Out of scope
 
-### Types
-All shared types are in `src/types.ts`. `GameState.moves` is the authoritative move history (array of `Move`). `MoveAccuracyLog` accumulates client-side during play and is persisted in the review record. `MatchRecord` includes `isBotMatch` and `botDifficulty` — always populate both when saving history for bot games.
+The localStorage social features (friends, groups, tournaments, notifications,
+global chat) were removed in v2. They were per-browser fakes that could not work
+across devices. They remain on the `archive/pre-v2-2026-09` branch. Do not
+reintroduce them without a real backend.

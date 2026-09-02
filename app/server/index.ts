@@ -97,10 +97,7 @@ export async function createApp() {
   app.get('/api/me', async (req, res) => {
     const user = await requireUser(req, res);
     if (!user) return;
-    const [profile, recent] = await Promise.all([
-      getProfile(user.uid),
-      getRecentMatches(user.uid),
-    ]);
+    const [profile, recent] = await Promise.all([getProfile(user.uid), getRecentMatches(user.uid)]);
     res.json({ uid: user.uid, name: user.name, photoURL: user.picture, profile, recent });
   });
 

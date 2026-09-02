@@ -110,12 +110,21 @@ export class MatchStore {
     return match;
   }
 
+  /**
+   * Look up a match by code.
+   *
+   * Codes are generated and displayed uppercase, but they travel through URLs
+   * and get typed by hand, so every lookup normalises. Doing it here rather
+   * than at each call site is what stops a lowercase invite link from joining
+   * successfully and then failing on the first move.
+   */
   get(id: string): Match | undefined {
-    return this.matches.get(id);
+    if (typeof id !== 'string') return undefined;
+    return this.matches.get(id.toUpperCase());
   }
 
   delete(id: string): void {
-    this.matches.delete(id);
+    this.matches.delete(id.toUpperCase());
   }
 
   all(): Match[] {

@@ -134,8 +134,11 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
       });
 
       if (current.state.winner) {
-        void finish(current, current.state.winner as Mark | 'Draw',
-          current.state.winner === 'Draw' ? 'draw' : 'line');
+        void finish(
+          current,
+          current.state.winner as Mark | 'Draw',
+          current.state.winner === 'Draw' ? 'draw' : 'line',
+        );
       } else {
         broadcast(current);
       }
@@ -207,8 +210,8 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
         return;
       }
 
-      // Room codes are shown uppercase; accept any casing the user types.
-      const match = store.get(matchId.toUpperCase()) ?? store.get(matchId);
+      // MatchStore.get normalises case, so any casing the player types works.
+      const match = store.get(matchId);
       if (!match) {
         // Deliberately does NOT auto-create. A mistyped or expired code is an
         // error the player needs to see, not a silent new empty room.
@@ -416,7 +419,8 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
       store.touch(match);
 
       const bothAgreed =
-        match.mode === 'bot' || (match.rematchRequestedBy.has('X') && match.rematchRequestedBy.has('O'));
+        match.mode === 'bot' ||
+        (match.rematchRequestedBy.has('X') && match.rematchRequestedBy.has('O'));
 
       if (!bothAgreed) {
         broadcast(match);

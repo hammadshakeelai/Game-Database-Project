@@ -83,17 +83,20 @@ export async function recordMatch(match: Match): Promise<void> {
     const db = adminDb();
     const winner = match.result.winner;
 
-    await db.collection('match_records').doc(match.id).set({
-      playerX: x.uid,
-      playerO: o.uid,
-      playerXName: x.name,
-      playerOName: o.name,
-      winner,
-      reason: match.result.reason,
-      movesCount: match.state.moves.length,
-      createdAt: match.createdAt,
-      finishedAt: match.finishedAt ?? Date.now(),
-    });
+    await db
+      .collection('match_records')
+      .doc(match.id)
+      .set({
+        playerX: x.uid,
+        playerO: o.uid,
+        playerXName: x.name,
+        playerOName: o.name,
+        winner,
+        reason: match.result.reason,
+        movesCount: match.state.moves.length,
+        createdAt: match.createdAt,
+        finishedAt: match.finishedAt ?? Date.now(),
+      });
 
     await Promise.all([
       bumpStats(x.uid, outcomeFor('X', winner)),
@@ -138,10 +141,18 @@ export async function getRecentMatches(uid: string, limit = 10): Promise<RecentM
     const db = adminDb();
     // Firestore has no OR across fields, so query both sides and merge.
     const [asX, asO] = await Promise.all([
-      db.collection('match_records').where('playerX', '==', uid)
-        .orderBy('finishedAt', 'desc').limit(limit).get(),
-      db.collection('match_records').where('playerO', '==', uid)
-        .orderBy('finishedAt', 'desc').limit(limit).get(),
+      db
+        .collection('match_records')
+        .where('playerX', '==', uid)
+        .orderBy('finishedAt', 'desc')
+        .limit(limit)
+        .get(),
+      db
+        .collection('match_records')
+        .where('playerO', '==', uid)
+        .orderBy('finishedAt', 'desc')
+        .limit(limit)
+        .get(),
     ]);
 
     const rows = [...asX.docs, ...asO.docs].map(doc => {
@@ -152,7 +163,11 @@ export async function getRecentMatches(uid: string, limit = 10): Promise<RecentM
         id: doc.id,
         opponentName: mark === 'X' ? d.playerOName : d.playerXName,
         outcome:
-          winner === 'Draw' ? ('draw' as const) : winner === mark ? ('win' as const) : ('loss' as const),
+          winner === 'Draw'
+            ? ('draw' as const)
+            : winner === mark
+              ? ('win' as const)
+              : ('loss' as const),
         movesCount: d.movesCount as number,
         finishedAt: d.finishedAt as number,
       };
@@ -176,11 +191,7 @@ export interface LeaderboardRow {
 export async function getLeaderboard(limit = 25): Promise<LeaderboardRow[]> {
   if (!adminConfigured) return [];
   try {
-    const snap = await adminDb()
-      .collection('users')
-      .orderBy('wins', 'desc')
-      .limit(limit)
-      .get();
+    const snap = await adminDb().collection('users').orderBy('wins', 'desc').limit(limit).get();
     return snap.docs.map(doc => {
       const d = doc.data();
       return {

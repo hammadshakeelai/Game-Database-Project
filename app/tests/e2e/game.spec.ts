@@ -95,7 +95,8 @@ test.describe('two-player game', () => {
 
     // Both players must be moved to a DIFFERENT match, so wait for the code in
     // the URL to actually change rather than for the shape of the URL.
-    const movedOn = (url: URL) => /\/play\/[A-Z0-9]{6}$/.test(url.pathname) && !url.pathname.endsWith(code);
+    const movedOn = (url: URL) =>
+      /\/play\/[A-Z0-9]{6}$/.test(url.pathname) && !url.pathname.endsWith(code);
     await alice.waitForURL(movedOn, { timeout: 20_000 });
     await bob.waitForURL(movedOn, { timeout: 20_000 });
     expect(alice.url()).toBe(bob.url());

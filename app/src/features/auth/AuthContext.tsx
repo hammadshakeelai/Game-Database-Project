@@ -59,9 +59,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>(
-    firebaseConfigured ? 'loading' : 'unconfigured',
-  );
+  const [status, setStatus] = useState<AuthStatus>(firebaseConfigured ? 'loading' : 'unconfigured');
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [recent, setRecent] = useState<RecentMatch[]>([]);

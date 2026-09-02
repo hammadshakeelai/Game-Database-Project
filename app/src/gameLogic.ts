@@ -4,9 +4,14 @@ import type { Player, BoardState, SuperBoardState, GameState, Move } from './typ
 export type { Player, BoardState, SuperBoardState, GameState, Move };
 
 const WINNING_COMBINATIONS = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-  [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
-  [0, 4, 8], [2, 4, 6]             // Diagonals
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8], // Rows
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8], // Cols
+  [0, 4, 8],
+  [2, 4, 6], // Diagonals
 ];
 
 /**
@@ -35,24 +40,30 @@ export function createInitialState(): GameState {
     currentPlayer: 'X',
     nextRequiredSubBoard: null,
     winner: null,
-    moves: []
+    moves: [],
   };
 }
 
 /**
  * Validate whether a move is legal in the current game state.
  */
-export function isValidMove(state: GameState, superGridIndex: number, subGridIndex: number): boolean {
+export function isValidMove(
+  state: GameState,
+  superGridIndex: number,
+  subGridIndex: number,
+): boolean {
   // Game already over
   if (state.winner !== null) return false;
   // Must play in the required sub-board (if any)
-  if (state.nextRequiredSubBoard !== null && state.nextRequiredSubBoard !== superGridIndex) return false;
+  if (state.nextRequiredSubBoard !== null && state.nextRequiredSubBoard !== superGridIndex)
+    return false;
   // Sub-board already has a winner
   if (state.subBoardWinners[superGridIndex] !== null) return false;
   // Cell already occupied
   if (state.superBoard[superGridIndex][subGridIndex] !== null) return false;
   // Indices in range
-  if (superGridIndex < 0 || superGridIndex > 8 || subGridIndex < 0 || subGridIndex > 8) return false;
+  if (superGridIndex < 0 || superGridIndex > 8 || subGridIndex < 0 || subGridIndex > 8)
+    return false;
   return true;
 }
 
@@ -67,7 +78,7 @@ export function cloneGameState(state: GameState): GameState {
     currentPlayer: state.currentPlayer,
     nextRequiredSubBoard: state.nextRequiredSubBoard,
     winner: state.winner,
-    moves: state.moves.slice()
+    moves: state.moves.slice(),
   };
 }
 
@@ -122,7 +133,7 @@ export function applyMoveFast(state: GameState, move: Move): GameState {
 
   // Create new state with minimal copying
   const newSuperBoard = state.superBoard.map((sub, i) =>
-    i === superGridIndex ? sub.slice() as Player[] : sub
+    i === superGridIndex ? (sub.slice() as Player[]) : sub,
   );
   newSuperBoard[superGridIndex][subGridIndex] = player;
 
@@ -159,6 +170,6 @@ export function applyMoveFast(state: GameState, move: Move): GameState {
     currentPlayer: nextPlayer,
     nextRequiredSubBoard: nextRequired,
     winner: superWinner,
-    moves: state.moves // share reference — not used in minimax
+    moves: state.moves, // share reference — not used in minimax
   };
 }
