@@ -10,16 +10,16 @@ host and one Firebase console click that has no API.
 Firebase project **`supertictactoe-745a1`** (display name "supertictactoe"), on
 the free Spark plan, no billing attached:
 
-| Item | State |
-| --- | --- |
-| Web app registered | Done — `1:502553446646:web:365812905e2136746bc4d7` |
-| Cloud Firestore `(default)` | Created, Native mode, `nam5` |
-| Security rules | Deployed from `app/firestore.rules` |
-| Composite indexes | Deployed from `app/firestore.indexes.json`, both `READY` |
-| Runtime service account | `ttt-server@supertictactoe-745a1.iam.gserviceaccount.com` |
-| Service-account roles | `datastore.user` + `serviceusage.serviceUsageConsumer` only |
-| Key file | `~/.secrets/ttt-sa.json` — **outside the repo, never committed** |
-| Local `app/.env` | Written with the live web config (gitignored) |
+| Item                        | State                                                            |
+| --------------------------- | ---------------------------------------------------------------- |
+| Web app registered          | Done — `1:502553446646:web:365812905e2136746bc4d7`               |
+| Cloud Firestore `(default)` | Created, Native mode, `nam5`                                     |
+| Security rules              | Deployed from `app/firestore.rules`                              |
+| Composite indexes           | Deployed from `app/firestore.indexes.json`, both `READY`         |
+| Runtime service account     | `ttt-server@supertictactoe-745a1.iam.gserviceaccount.com`        |
+| Service-account roles       | `datastore.user` + `serviceusage.serviceUsageConsumer` only      |
+| Key file                    | `~/.secrets/ttt-sa.json` — **outside the repo, never committed** |
+| Local `app/.env`            | Written with the live web config (gitignored)                    |
 
 Verified against this live project — not emulators — with two real Firebase
 accounts: token verification, room create/join, realtime move sync, and results
@@ -27,22 +27,21 @@ plus recent history landing in live Firestore.
 
 ---
 
-## Step 1 — Enable Google sign-in (console only, ~30 seconds)
+## Step 1 — Enable Google sign-in ✅ DONE
 
-This is the one thing that cannot be automated. Enabling a Google provider
-requires an OAuth 2.0 web client, and Google publishes **no API** to create one
-— it is a console-only operation. The Identity Toolkit API rejects the request
-with `INVALID_CONFIG : client_id cannot be empty`.
+Enabled in the console on 2026-09-03 and **verified working**: signing in with a
+real Google account lands in the lobby with the correct display name and avatar,
+creates a room with a shareable code, and plays a game against the computer with
+the forced-sub-board rule behaving correctly — all against live Firebase, no
+emulators.
 
-1. Open <https://console.firebase.google.com/project/supertictactoe-745a1/authentication/providers>
-2. Click **Google** → toggle **Enable**
-3. Pick a support email → **Save**
-
-Firebase auto-creates the OAuth client and its redirect URIs. Nothing else to configure.
+This step could not be automated: enabling a Google provider needs an OAuth 2.0
+web client, and Google publishes no API to create one. The Identity Toolkit API
+refuses with `INVALID_CONFIG : client_id cannot be empty`.
 
 ## Step 2 — Deploy the server
 
-The app is a single Node process (Express serves the SPA *and* runs the
+The app is a single Node process (Express serves the SPA _and_ runs the
 authoritative socket.io game server), so it needs a host that keeps a process
 alive. Serverless platforms do not work here: game state lives in that process's
 memory, and socket.io needs a persistent connection.
@@ -73,10 +72,11 @@ VITE_FIREBASE_APP_ID=1:502553446646:web:365812905e2136746bc4d7
 Plus two more:
 
 - **`FIREBASE_SERVICE_ACCOUNT`** — a real secret. Paste the entire contents of
-  `~/.secrets/ttt-sa.json` **as one line**. Get it with:
+  `~/.secrets/ttt-sa.json` **as one line**. Copy it straight to the clipboard so
+  it never lands in a terminal scrollback:
 
-  ```bash
-  node -e "console.log(JSON.stringify(require(require('os').homedir()+'/.secrets/ttt-sa.json')))"
+  ```powershell
+  node -e "console.log(JSON.stringify(require(require('os').homedir()+'/.secrets/ttt-sa.json')))" | Set-Clipboard
   ```
 
 - **`CLIENT_ORIGIN`** — your Render URL, e.g. `https://super-tic-tac-toe.onrender.com`.
