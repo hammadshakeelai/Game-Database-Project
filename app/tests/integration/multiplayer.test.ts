@@ -347,6 +347,37 @@ describe('authorization on game-ending actions', () => {
     expect((await err).code).toBe('GAME_OVER');
   });
 
+  it('forfeits to the opponent when a player leaves a game in progress', async () => {
+    const { matchId } = await makeGame(a, b);
+    const update = waitFor<MatchView>(b, 'match_update');
+    a.emit('leave_match', { matchId });
+    const view = await update;
+    expect(view.status).toBe('finished');
+    // X walked out, so O wins.
+    expect(view.result).toEqual({ winner: 'O', reason: 'resign' });
+  });
+
+  it('does not change the result when a player leaves a finished game', async () => {
+    const { matchId } = await makeGame(a, b);
+    const ended = waitFor<MatchView>(b, 'match_update');
+    a.emit('resign', { matchId });
+    const finished = await ended;
+    expect(finished.result).toEqual({ winner: 'O', reason: 'resign' });
+
+    // Leaving afterwards is plain navigation, not a second forfeit.
+    b.emit('leave_match', { matchId });
+    await new Promise(r => setTimeout(r, 200));
+    const view = (await emitAck<AckOk>(a, 'join_match', { matchId })).match;
+    expect(view.result).toEqual({ winner: 'O', reason: 'resign' });
+  });
+
+  it('refuses a leave from someone who is not in the match', async () => {
+    const { matchId } = await makeGame(a, b);
+    const err = waitFor<{ code: string }>(c, 'game_error');
+    c.emit('leave_match', { matchId });
+    expect((await err).code).toBe('NOT_A_PLAYER');
+  });
+
   it('refuses a hint to a player who is not on move', async () => {
     const { matchId } = await makeGame(a, b);
     const err = waitFor<{ code: string }>(b, 'game_error');

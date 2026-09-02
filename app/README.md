@@ -19,7 +19,7 @@ the game.
 - **Two-sided rematch** — both players must agree, and the second player starts.
 - **Play the computer** — minimax practice, kept out of your record.
 - **Your record** — games, wins, losses, draws, and recent results.
-- **Draw offers, resignation, and hints.**
+- **Draw offers, resignation, and hints** — and leaving a game in progress forfeits it, with a confirmation.
 - **Responsive and accessible** — works on a phone, keyboard-navigable, and
   never signals turn or winner by colour alone.
 
@@ -157,11 +157,11 @@ See [`.env.example`](.env.example) for the full annotated list.
 
 ## Testing
 
-| Suite       | Count | What it proves                                                                                                                                                                                                 |
-| ----------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit        | 25    | The Ultimate TTT rules: sub-board wins, the forced sub-board, the free move when the target is decided, draws, immutability                                                                                    |
-| Integration | 50    | Real sockets and real ID tokens: impersonation, out-of-turn and illegal moves, unauthorised resign/draw, unknown and full rooms, contested cells, reconnect. Plus 14 security-rules tests run as a real client |
-| E2E         | 13    | Two browser contexts through the full stack: create → share → join → play → result → rematch, refresh recovery, and mobile layout                                                                              |
+| Suite       | Count | What it proves                                                                                                                                                                                                       |
+| ----------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | 39    | The Ultimate TTT rules (sub-board wins, the forced sub-board, the free move when the target is decided, draws, immutability) and the match lifecycle (code alphabet, case-insensitive lookup, reaping)               |
+| Integration | 54    | Real sockets and real ID tokens: impersonation, out-of-turn and illegal moves, unauthorised resign/draw/leave, unknown and full rooms, contested cells, reconnect. Plus 14 security-rules tests run as a real client |
+| E2E         | 13    | Two browser contexts through the full stack: create → share → join → play → result → rematch, refresh recovery, and mobile layout                                                                                    |
 
 Sign-in is exercised through the **Auth emulator**. Automating Google's live
 OAuth screens would be fragile and is not something to script.

@@ -40,6 +40,8 @@ interface UseMatchResult {
   requestRematch: () => void;
   requestHint: () => void;
   sendMessage: (text: string) => void;
+  /** Leave deliberately. Forfeits if the game is still in play. */
+  leaveMatch: () => void;
   dismissActionError: () => void;
 }
 
@@ -154,6 +156,16 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
     });
   }, [socket, matchId]);
 
+  const leaveMatch = useCallback(() => {
+    const current = matchRef.current;
+    if (!socket || !matchId || !current) return;
+    // Only tell the server when there is something to forfeit. Leaving a
+    // finished game is not a resignation.
+    if (current.status === 'active' && current.role !== 'spectator') {
+      socket.emit('leave_match', { matchId });
+    }
+  }, [socket, matchId]);
+
   const sendMessage = useCallback(
     (text: string) => {
       const trimmed = text.trim();
@@ -180,6 +192,7 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
     requestRematch,
     requestHint: simpleAction('request_hint'),
     sendMessage,
+    leaveMatch,
     dismissActionError: useCallback(() => setActionError(null), []),
   };
 }

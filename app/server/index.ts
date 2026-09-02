@@ -7,7 +7,7 @@ import { PORT, clientOrigins, isProduction, usingEmulators } from './env.js';
 import { adminConfigured, verifyIdToken } from './firebaseAdmin.js';
 import { MatchStore } from './matchStore.js';
 import { registerGameHandlers } from './gameHandlers.js';
-import { getLeaderboard, getProfile, getRecentMatches } from './persistence.js';
+import { getProfile, getRecentMatches } from './persistence.js';
 
 /**
  * Server entry point. Serves the built SPA and hosts the authoritative game.
@@ -30,11 +30,19 @@ export async function createApp() {
 
   app.use(express.json({ limit: '32kb' }));
 
+  if (isProduction && clientOrigins.length === 0) {
+    // Fail closed. Defaulting to a wildcard here would silently drop the
+    // allowlist the README lists as a defence.
+    throw new Error(
+      'CLIENT_ORIGIN must be set in production (comma-separated list of allowed origins).',
+    );
+  }
+
   const io = new Server(httpServer, {
     // In development any origin is allowed so a phone on the same Wi-Fi can
     // connect. In production only the configured origins may open a socket.
     cors: {
-      origin: isProduction && clientOrigins.length > 0 ? clientOrigins : true,
+      origin: isProduction ? clientOrigins : true,
       credentials: true,
     },
     pingTimeout: 20000,
@@ -99,12 +107,6 @@ export async function createApp() {
     if (!user) return;
     const [profile, recent] = await Promise.all([getProfile(user.uid), getRecentMatches(user.uid)]);
     res.json({ uid: user.uid, name: user.name, photoURL: user.picture, profile, recent });
-  });
-
-  app.get('/api/leaderboard', async (req, res) => {
-    const user = await requireUser(req, res);
-    if (!user) return;
-    res.json({ rows: await getLeaderboard() });
   });
 
   // -----------------------------------------------------------------

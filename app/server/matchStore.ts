@@ -146,10 +146,6 @@ export class MatchStore {
     return this.markOf(match, uid) ?? 'spectator';
   }
 
-  opponentOf(match: Match, mark: Mark): MatchPlayer | null {
-    return mark === 'X' ? match.players.O : match.players.X;
-  }
-
   touch(match: Match): void {
     match.lastActivity = Date.now();
   }

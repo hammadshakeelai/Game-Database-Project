@@ -179,31 +179,3 @@ export async function getRecentMatches(uid: string, limit = 10): Promise<RecentM
     return [];
   }
 }
-
-export interface LeaderboardRow {
-  uid: string;
-  displayName: string;
-  photoURL: string | null;
-  wins: number;
-  matchesPlayed: number;
-}
-
-export async function getLeaderboard(limit = 25): Promise<LeaderboardRow[]> {
-  if (!adminConfigured) return [];
-  try {
-    const snap = await adminDb().collection('users').orderBy('wins', 'desc').limit(limit).get();
-    return snap.docs.map(doc => {
-      const d = doc.data();
-      return {
-        uid: doc.id,
-        displayName: d.displayName ?? 'Player',
-        photoURL: d.photoURL ?? null,
-        wins: d.wins ?? 0,
-        matchesPlayed: d.matchesPlayed ?? 0,
-      };
-    });
-  } catch (err) {
-    console.error('[persistence] getLeaderboard failed:', (err as Error).message);
-    return [];
-  }
-}

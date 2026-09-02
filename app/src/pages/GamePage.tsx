@@ -30,6 +30,7 @@ export default function GamePage() {
     declineDraw,
     requestRematch,
     requestHint,
+    leaveMatch,
     dismissActionError,
   } = useMatch(socket, matchId);
 
@@ -91,13 +92,10 @@ export default function GamePage() {
     <main className="min-h-dvh bg-slate-900 px-3 py-4 sm:px-6 sm:py-6">
       <div className="mx-auto w-full max-w-xl">
         <header className="mb-4 flex items-center justify-between gap-3">
-          <Link
-            to="/play"
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-slate-400 transition hover:bg-slate-800 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            Lobby
-          </Link>
+          <LeaveButton
+            forfeits={match.status === 'active' && match.role !== 'spectator'}
+            onLeave={leaveMatch}
+          />
           {match.mode === 'pvp' && <ShareCode code={match.id} />}
         </header>
 
@@ -216,6 +214,51 @@ const btnBase =
 const btnGhost = `${btnBase} border border-slate-700 bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-slate-100`;
 const btnPrimary = `${btnBase} bg-indigo-600 text-white hover:bg-indigo-500`;
 const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-500`;
+
+/**
+ * Back-to-lobby control.
+ *
+ * Walking out of a game in progress forfeits it, so that needs confirming —
+ * the same two-tap pattern as resign. Leaving a finished game is just navigation.
+ */
+function LeaveButton({ forfeits, onLeave }: { forfeits: boolean; onLeave: () => void }) {
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+
+  const className =
+    'flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 ' +
+    (confirming
+      ? 'bg-red-500/15 text-red-200'
+      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200');
+
+  if (!forfeits) {
+    return (
+      <Link to="/play" className={className}>
+        <ArrowLeft size={16} aria-hidden="true" />
+        Lobby
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      onBlur={() => setConfirming(false)}
+      onClick={() => {
+        if (!confirming) {
+          setConfirming(true);
+          return;
+        }
+        onLeave();
+        navigate('/play');
+      }}
+    >
+      <ArrowLeft size={16} aria-hidden="true" />
+      {confirming ? 'Leaving forfeits — tap again' : 'Lobby'}
+    </button>
+  );
+}
 
 function Centered({ title, body }: { title: string; body: string }) {
   return (

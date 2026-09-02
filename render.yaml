@@ -12,12 +12,14 @@ services:
     region: oregon
     branch: main
     rootDir: app
-    buildCommand: npm ci && npm run build
+    # --include=dev is required: NODE_ENV=production makes npm ci skip
+    # devDependencies, and vite/esbuild/typescript/cross-env all live there.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
-        value: '22'
+        value: "22"
       - key: NODE_ENV
         value: production
       # Secret. Set in the Render dashboard, never in this file.

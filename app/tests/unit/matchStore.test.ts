@@ -95,14 +95,6 @@ describe('roles', () => {
     expect(store.markOf(match, 'carol')).toBeNull();
     expect(store.roleOf(match, 'carol')).toBe('spectator');
   });
-
-  it('resolves the opponent from a mark', () => {
-    const store = new MatchStore();
-    const match = store.create({ mode: 'pvp', host: host('alice') });
-    seat(match, 'O', 'bob');
-    expect(store.opponentOf(match, 'X')?.uid).toBe('bob');
-    expect(store.opponentOf(match, 'O')?.uid).toBe('alice');
-  });
 });
 
 describe('reaping', () => {
