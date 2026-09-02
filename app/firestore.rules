@@ -1,103 +1,65 @@
 rules_version = '2';
+
+/**
+ * Firestore security rules.
+ *
+ * The game server writes results using the Admin SDK, which bypasses these
+ * rules entirely. That is what lets everything here be read-mostly: no client
+ * may write a match record or touch a win/loss count, so a player cannot
+ * manufacture a result or edit their own record.
+ */
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-    function isAuthenticated() {
+
+    function signedIn() {
       return request.auth != null;
     }
-    
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
 
-    function hasOnlyAllowedFields(fields) {
-      return request.resource.data.keys().hasOnly(fields);
-    }
-    
-    function validStringLength(field, minLen, maxLen) {
-      return request.resource.data[field] is string &&
-        request.resource.data[field].size() >= minLen &&
-        request.resource.data[field].size() <= maxLen;
+    /** Fields a player is allowed to change on their own profile. */
+    function onlyDisplayFieldsChanged() {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasOnly(['displayName', 'photoURL']);
     }
 
-    // ===============================================================
-    // Domain Validators
-    // ===============================================================
-    function isValidNewUser() {
-      return hasOnlyAllowedFields(['username', 'email', 'elo_rating', 'avg_accuracy', 'matches_played', 'wins', 'losses', 'draws', 'created_at']) &&
-             validStringLength('username', 3, 20) &&
-             request.resource.data.email is string &&
-             request.resource.data.elo_rating == 1200 &&
-             request.resource.data.avg_accuracy == 0 &&
-             request.resource.data.matches_played == 0 &&
-             request.resource.data.wins == 0 &&
-             request.resource.data.losses == 0 &&
-             request.resource.data.draws == 0 &&
-             request.resource.data.created_at is number;
+    function validDisplayName() {
+      return request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 60;
     }
 
-    function isValidUserUpdate() {
-      return hasOnlyAllowedFields(['username', 'email', 'elo_rating', 'avg_accuracy', 'matches_played', 'wins', 'losses', 'draws', 'created_at']) &&
-             request.resource.data.created_at == resource.data.created_at &&
-             request.resource.data.email == resource.data.email &&
-             request.resource.data.username == resource.data.username;
-    }
+    match /users/{uid} {
+      // Profiles are public to signed-in players so opponent names, the
+      // leaderboard, and match history can render.
+      allow read: if signedIn();
 
-    function isValidUsername() {
-      return hasOnlyAllowedFields(['uid']) &&
-             request.resource.data.uid is string;
-    }
+      // Creation is the server's job (on first connection). A client creating
+      // its own document could seed itself a fabricated record.
+      allow create: if false;
 
-    function isValidGlobalChatMessage() {
-      return hasOnlyAllowedFields(['sender_id', 'sender_name', 'message', 'timestamp']) &&
-             request.resource.data.sender_id is string &&
-             validStringLength('sender_name', 1, 50) &&
-             validStringLength('message', 1, 500) &&
-             request.resource.data.timestamp is number;
-    }
+      // A player may correct their own display name or picture, and nothing
+      // else. Stats are server-owned.
+      allow update: if isSelf(uid) && onlyDisplayFieldsChanged() && validDisplayName();
 
-    function isValidMatchRecord() {
-      return hasOnlyAllowedFields(['player_x', 'player_o', 'player_x_name', 'player_o_name', 'winner', 'status', 'moves_count', 'created_at']) &&
-             request.resource.data.player_x is string &&
-             request.resource.data.player_o is string &&
-             request.resource.data.player_x_name is string &&
-             request.resource.data.player_o_name is string &&
-             request.resource.data.winner is string &&
-             request.resource.data.status is string &&
-             request.resource.data.moves_count is number &&
-             request.resource.data.created_at is number;
-    }
-
-    // ===============================================================
-    // Collections
-    // ===============================================================
-    
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId) && isValidNewUser();
-      allow update: if isOwner(userId) && isValidUserUpdate();
-    }
-
-    match /usernames/{username} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidUsername() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if false;
-    }
-
-    match /global_chat/{messageId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidGlobalChatMessage() && request.resource.data.sender_id == request.auth.uid;
-      allow update, delete: if false;
+      allow delete: if false;
     }
 
     match /match_records/{matchId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidMatchRecord() && 
-                    (request.resource.data.player_x == request.auth.uid || request.resource.data.player_o == request.auth.uid);
-      allow update, delete: if false;
+      // Results are readable so players can see their history and the
+      // leaderboard. They are never client-writable at all: every result comes
+      // from the authoritative game server.
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // Anything not named above is denied, including collections a future
+    // feature might add before its rules are written.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
