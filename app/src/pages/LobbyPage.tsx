@@ -104,17 +104,17 @@ export default function LobbyPage() {
             type="button"
             onClick={() => createMatch('pvp')}
             disabled={!ready || pending !== null}
-            className="group flex flex-col items-start gap-2 rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-indigo-600/25 to-indigo-800/10 p-5 text-left transition hover:border-indigo-400 hover:from-indigo-600/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-600 p-5 text-left shadow-lg shadow-indigo-950/50 transition hover:-translate-y-0.5 hover:bg-indigo-500 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/25 text-indigo-200">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
               {pending === 'create' ? (
                 <Spinner size="sm" inline label="Creating" />
               ) : (
                 <Plus size={20} aria-hidden="true" />
               )}
             </span>
-            <span className="font-semibold text-slate-100">Create a game</span>
-            <span className="text-sm text-slate-400">Get a code to share with a friend.</span>
+            <span className="font-semibold text-white">Create a game</span>
+            <span className="text-sm text-indigo-100/80">Get a code to share with a friend.</span>
           </button>
 
           <button
