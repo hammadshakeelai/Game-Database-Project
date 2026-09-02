@@ -1,7 +1,9 @@
 # Deployment
 
-The Firebase side is **already set up and verified**. What remains is choosing a
-host and one Firebase console click that has no API.
+**Live at https://super-tic-tac-toe-kcyp.onrender.com**
+
+Deployed to Render on 2026-09-03 from the committed `render.yaml`. Everything
+below is a record of the setup; there are no outstanding steps.
 
 ---
 
@@ -39,59 +41,27 @@ This step could not be automated: enabling a Google provider needs an OAuth 2.0
 web client, and Google publishes no API to create one. The Identity Toolkit API
 refuses with `INVALID_CONFIG : client_id cannot be empty`.
 
-## Step 2 — Deploy the server
+## Step 2 — Deploy the server ✅ DONE
 
-The app is a single Node process (Express serves the SPA _and_ runs the
-authoritative socket.io game server), so it needs a host that keeps a process
-alive. Serverless platforms do not work here: game state lives in that process's
-memory, and socket.io needs a persistent connection.
+Deployed as a Render **web service** on the free plan, from the committed
+[`render.yaml`](../render.yaml) blueprint. One Node process serves the SPA and
+runs the authoritative socket.io game server.
 
-**Render** is the recommended host — it is the only platform with a genuinely
-free tier that supports persistent WebSockets and does not ask for a credit card.
-[`render.yaml`](../render.yaml) is committed, so Render configures itself.
+- Service: `super-tic-tac-toe` (`srv-dac7edv10e5c73fqs9b0`)
+- URL: **https://super-tic-tac-toe-kcyp.onrender.com**
+- Branch: `main`, auto-deploys on push
 
-1. Sign up at <https://render.com> with GitHub (free, no card).
-2. **New → Blueprint**, pick `hammadshakeelai/Game-Database-Project`.
-   Render reads `render.yaml` and proposes the service.
-3. Set the environment variables below, then **Apply**.
+> **Render suffixed the hostname.** `render.yaml` asks for the service name
+> `super-tic-tac-toe`, but `.onrender.com` hostnames are globally unique and that
+> one was taken, so the URL came back as `super-tic-tac-toe-kcyp.onrender.com`.
+> `CLIENT_ORIGIN` had to be corrected to match after the first deploy — the
+> server rejects socket handshakes from any other origin.
 
-### Environment variables to paste into Render
+## Step 3 — Authorise the deployed domain ✅ DONE
 
-These are the live values for this project. The `VITE_*` values are public
-identifiers that ship in the browser bundle by design.
-
-```
-VITE_FIREBASE_API_KEY=AIzaSyAcvBOYkq4bX03GkKQzY6FMsHD1dZF5X00
-VITE_FIREBASE_AUTH_DOMAIN=supertictactoe-745a1.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=supertictactoe-745a1
-VITE_FIREBASE_STORAGE_BUCKET=supertictactoe-745a1.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=502553446646
-VITE_FIREBASE_APP_ID=1:502553446646:web:365812905e2136746bc4d7
-```
-
-Plus two more:
-
-- **`FIREBASE_SERVICE_ACCOUNT`** — a real secret. Paste the entire contents of
-  `~/.secrets/ttt-sa.json` **as one line**. Copy it straight to the clipboard so
-  it never lands in a terminal scrollback:
-
-  ```powershell
-  node -e "console.log(JSON.stringify(require(require('os').homedir()+'/.secrets/ttt-sa.json')))" | Set-Clipboard
-  ```
-
-- **`CLIENT_ORIGIN`** — your Render URL, e.g. `https://super-tic-tac-toe.onrender.com`.
-  You will only know this after the first deploy, so set it then and redeploy.
-  The server **refuses to start** without it in production; that is deliberate,
-  so the CORS allowlist can never silently become a wildcard.
-
-## Step 3 — Authorise the deployed domain
-
-Google sign-in rejects any domain not on the allowlist, so the first deploy will
-fail sign-in until you do this.
-
-1. Open <https://console.firebase.google.com/project/supertictactoe-745a1/authentication/settings>
-2. **Authorised domains → Add domain** → your Render hostname
-   (e.g. `super-tic-tac-toe.onrender.com`, no scheme)
+`super-tic-tac-toe-kcyp.onrender.com` was added to the Firebase authorised
+domains via the Identity Toolkit API. Without it, Google sign-in fails with
+`auth/unauthorized-domain`.
 
 ## Step 4 — Smoke-test production
 

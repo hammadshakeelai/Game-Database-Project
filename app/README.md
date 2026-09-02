@@ -1,5 +1,7 @@
 # Super Tic-Tac-Toe
 
+**▶ Play it: https://super-tic-tac-toe-kcyp.onrender.com**
+
 Online two-player **Ultimate Tic-Tac-Toe** with Google sign-in, shareable game
 codes, and a server-authoritative game engine.
 
@@ -168,25 +170,18 @@ OAuth screens would be fragile and is not something to script.
 
 ## Deployment
 
-The Firebase project is already set up, verified against live infrastructure,
-and documented in **[docs/deployment.md](../docs/deployment.md)** — read that for
-the exact remaining steps and the environment values to paste.
+**Live at https://super-tic-tac-toe-kcyp.onrender.com**, deployed on Render from the committed
+[`render.yaml`](../render.yaml). Pushes to `main` auto-deploy.
 
-In short: the app is one Node process (Express serves the SPA _and_ runs the
-game server), so it needs a host that keeps a process alive — serverless will
-not work, because game state lives in that process's memory.
-[`render.yaml`](../render.yaml) is committed so Render configures itself.
+The app is one Node process — Express serves the SPA _and_ runs the game server —
+so it needs a host that keeps a process alive. Serverless will not work here,
+because game state lives in that process's memory.
 
-Three things still need a human:
-
-1. **Enable Google sign-in** in the Firebase console. This has no API — Google
-   provides no public endpoint to create the required OAuth 2.0 client.
-2. **Create the Render service** from the blueprint and set the env vars.
-3. **Add the Render domain** to Firebase Authorised domains, or sign-in fails
-   with `auth/unauthorized-domain`.
+Setup details and the Firebase configuration are in
+[docs/deployment.md](../docs/deployment.md).
 
 > Render's free tier sleeps after 15 minutes idle, so the first visitor after a
-> quiet spell waits about a minute. An occupied game stays awake via the socket
+> quiet spell waits up to a minute. An occupied game stays awake via the socket
 > heartbeat.
 
 ## Project structure
