@@ -1,195 +1,310 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Bot, Plus, Users } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bot, Loader2, Plus, Swords, X } from 'lucide-react';
 import { useAuth } from '../features/auth/AuthContext';
 import { useSocket } from '../features/game/useSocket';
 import { ERROR_COPY, type ErrorCode, type MatchView } from '../features/game/types';
-import { Spinner } from '../components/Spinner';
-import { AppShell } from '../components/AppShell';
-import { ConnectionBanner } from '../components/ConnectionBanner';
+import { AppShell, Avatar } from '../components/AppShell';
+import { ConnectionDot } from '../components/ConnectionDot';
+import { cn } from '../utils';
 
-type AckResponse = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
+type Ack = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
 
-/** Home screen: start a game, join one, or play the computer. */
+/** Bot levels map to minimax search depth. */
+const LEVELS = [
+  { depth: 1, name: 'Casual', blurb: 'Plays the first thing that looks fine.' },
+  { depth: 2, name: 'Steady', blurb: 'Sees the move in front of it.' },
+  { depth: 3, name: 'Sharp', blurb: 'Looks a few moves ahead.' },
+  { depth: 4, name: 'Tough', blurb: 'Punishes a loose square.' },
+  { depth: 5, name: 'Brutal', blurb: 'Searches deep. Good luck.' },
+];
+
 export default function LobbyPage() {
   const navigate = useNavigate();
-  const { profile, recent, statsLoading, refreshStats } = useAuth();
+  const { profile, recent, refreshStats } = useAuth();
   const { socket, connection, error: socketError } = useSocket();
 
   const [code, setCode] = useState('');
-  const [joinError, setJoinError] = useState<string | null>(null);
-  const [pending, setPending] = useState<null | 'create' | 'bot' | 'join'>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<null | 'create' | 'join' | 'bot'>(null);
+  const [queued, setQueued] = useState(false);
+  const [noOpponent, setNoOpponent] = useState(false);
+  const [level, setLevel] = useState(3);
 
-  // Stats may have changed while a game was played in another tab.
   useEffect(() => {
     void refreshStats();
   }, [refreshStats]);
 
-  const ready = socket !== null && connection === 'connected';
+  useEffect(() => {
+    if (!socket) return;
+    const onFound = ({ matchId }: { matchId: string }) => {
+      setQueued(false);
+      navigate(`/play/${matchId}`);
+    };
+    const onJoined = () => {
+      setQueued(true);
+      setNoOpponent(false);
+    };
+    const onNone = () => {
+      setQueued(false);
+      setNoOpponent(true);
+    };
+    const onLeft = () => setQueued(false);
 
-  const createMatch = useCallback(
+    socket.on('match_found', onFound);
+    socket.on('queue_joined', onJoined);
+    socket.on('queue_no_opponent', onNone);
+    socket.on('queue_left', onLeft);
+    return () => {
+      socket.off('match_found', onFound);
+      socket.off('queue_joined', onJoined);
+      socket.off('queue_no_opponent', onNone);
+      socket.off('queue_left', onLeft);
+    };
+  }, [socket, navigate]);
+
+  const create = useCallback(
     (mode: 'pvp' | 'bot', botDifficulty?: number) => {
       if (!socket || pending) return;
       setPending(mode === 'bot' ? 'bot' : 'create');
-      setJoinError(null);
-      socket.emit('create_match', { mode, botDifficulty }, (res: AckResponse) => {
+      setError(null);
+      socket.emit('create_match', { mode, botDifficulty }, (res: Ack) => {
         setPending(null);
         if (res.ok) navigate(`/play/${res.match.id}`);
-        else setJoinError(ERROR_COPY[res.code] ?? res.message);
+        else setError(ERROR_COPY[res.code] ?? res.message);
       });
     },
     [socket, navigate, pending],
   );
 
-  const joinMatch = useCallback(
+  const join = useCallback(
     (event: FormEvent) => {
       event.preventDefault();
       const trimmed = code.trim().toUpperCase();
       if (!socket || !trimmed || pending) return;
       setPending('join');
-      setJoinError(null);
-      socket.emit('join_match', { matchId: trimmed }, (res: AckResponse) => {
+      setError(null);
+      socket.emit('join_match', { matchId: trimmed }, (res: Ack) => {
         setPending(null);
         if (res.ok) navigate(`/play/${res.match.id}`);
-        else setJoinError(ERROR_COPY[res.code] ?? res.message);
+        else setError(ERROR_COPY[res.code] ?? res.message);
       });
     },
     [socket, code, navigate, pending],
   );
 
   return (
-    <AppShell title="Play">
-      <div className="w-full">
-        <ConnectionBanner connection={connection} error={socketError} />
-
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-6 grid gap-3 sm:grid-cols-2"
-        >
+    <AppShell title="Play" actions={<ConnectionDot connection={connection} error={socketError} />}>
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-4">
+        <section className="grid shrink-0 gap-3 md:grid-cols-3">
           <button
             type="button"
-            onClick={() => createMatch('pvp')}
-            disabled={!ready || pending !== null}
-            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-700 p-5 text-left shadow-lg shadow-slate-900/60 transition hover:-translate-y-0.5 hover:bg-indigo-600 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            onClick={() => (queued ? socket?.emit('leave_queue') : socket?.emit('join_queue'))}
+            className={cn(
+              'group flex flex-col items-start gap-1.5 rounded-xl p-5 text-left md:col-span-2',
+              'transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-0',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300',
+              'motion-reduce:hover:translate-y-0',
+              queued ? 'bg-indigo-800 text-slate-100' : 'bg-indigo-700 text-slate-100',
+            )}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100/15 text-slate-100">
-              {pending === 'create' ? (
-                <Spinner size="sm" inline label="Creating" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100/15">
+              {queued ? (
+                <Loader2
+                  size={18}
+                  className="animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
               ) : (
-                <Plus size={20} aria-hidden="true" />
+                <Swords size={18} aria-hidden="true" />
               )}
             </span>
-            <span className="text-lg font-semibold text-slate-100">Create a game</span>
-            <span className="text-sm text-indigo-100/85">Get a code to share with a friend.</span>
+            <span className="text-lg font-semibold">
+              {queued ? 'Looking for an opponent…' : 'Play online'}
+            </span>
+            <span className="text-sm text-indigo-100/85">
+              {queued ? 'Tap again to stop waiting.' : 'Matches you with whoever else is looking.'}
+            </span>
           </button>
 
           <button
             type="button"
-            onClick={() => createMatch('bot', 3)}
-            disabled={!ready || pending !== null}
-            className="group flex flex-col items-start gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-5 text-left transition hover:border-slate-600 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => create('bot', level)}
+            disabled={pending !== null}
+            className="edge surface-panel group flex flex-col items-start gap-1.5 rounded-xl border p-5 text-left transition-transform duration-150 hover:-translate-y-0.5 hover:border-indigo-500 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:opacity-60 motion-reduce:hover:translate-y-0"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700/60 text-slate-300">
-              {pending === 'bot' ? (
-                <Spinner size="sm" inline label="Starting" />
-              ) : (
-                <Bot size={20} aria-hidden="true" />
-              )}
+            <span className="surface-raised ink-muted flex h-9 w-9 items-center justify-center rounded-lg">
+              <Bot size={18} aria-hidden="true" />
             </span>
-            <span className="ttt-display text-lg font-semibold text-slate-100">
-              Play the computer
-            </span>
-            <span className="text-sm text-slate-400">
-              Practice on your own. Not counted in your record.
+            <span className="text-lg font-semibold">Play the computer</span>
+            <span className="ink-faint text-sm">
+              {LEVELS.find(l => l.depth === level)?.name}. Practice only, no rating change.
             </span>
           </button>
-        </motion.section>
-
-        <section className="mb-6 rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-100">
-            <Users size={18} aria-hidden="true" />
-            Join with a code
-          </h2>
-          <form onSubmit={joinMatch} className="flex flex-col gap-3 sm:flex-row">
-            <label htmlFor="room-code" className="sr-only">
-              Game code
-            </label>
-            <input
-              id="room-code"
-              value={code}
-              onChange={e => setCode(e.target.value.toUpperCase())}
-              placeholder="ABC123"
-              maxLength={6}
-              autoComplete="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              aria-invalid={joinError !== null}
-              aria-describedby={joinError ? 'join-error' : undefined}
-              className="ttt-notation min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-center text-lg tracking-[0.3em] text-slate-100 placeholder:tracking-normal placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-            />
-            <button
-              type="submit"
-              disabled={!ready || code.trim().length < 4 || pending !== null}
-              className="rounded-xl bg-indigo-700 px-6 py-3 font-semibold text-slate-100 transition hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {pending === 'join' ? 'Joining…' : 'Join'}
-            </button>
-          </form>
-          {joinError && (
-            <p id="join-error" role="alert" className="mt-3 text-sm text-red-300">
-              {joinError}
-            </p>
-          )}
         </section>
 
-        <section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="mb-4 text-lg font-semibold text-slate-100">Your record</h2>
-          {statsLoading && !profile ? (
-            <Spinner label="Loading your record" />
-          ) : (
-            <>
-              <dl className="mb-5 grid grid-cols-2 gap-2 text-center sm:grid-cols-4 sm:gap-3">
-                <Stat label="Played" value={profile?.matchesPlayed ?? 0} />
-                <Stat label="Won" value={profile?.wins ?? 0} tone="text-emerald-300" />
-                <Stat label="Lost" value={profile?.losses ?? 0} tone="text-rose-300" />
-                <Stat label="Drawn" value={profile?.draws ?? 0} />
-              </dl>
+        {noOpponent && (
+          <div className="edge surface-panel flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-indigo-500/50 p-4">
+            <p className="ink flex-1 text-sm">
+              Nobody else is looking right now. Play the computer instead, or wait a bit longer.
+            </p>
+            <button type="button" onClick={() => create('bot', level)} className={btnPrimary}>
+              Play the computer
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNoOpponent(false);
+                socket?.emit('join_queue');
+              }}
+              className={btnGhost}
+            >
+              Keep waiting
+            </button>
+            <button
+              type="button"
+              onClick={() => setNoOpponent(false)}
+              className="ink-faint hover:ink rounded-md p-1.5"
+            >
+              <X size={15} aria-hidden="true" />
+              <span className="sr-only">Dismiss</span>
+            </button>
+          </div>
+        )}
 
-              {recent.length === 0 ? (
-                <p className="text-sm text-slate-500">
-                  No games yet. Create one and send the code to a friend.
-                </p>
-              ) : (
-                <ul className="space-y-1.5">
-                  {recent.slice(0, 5).map(match => (
-                    <li
-                      key={match.id}
-                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-900/50 px-3 py-2 text-sm"
+        <section className="edge surface-panel shrink-0 rounded-xl border p-4">
+          <h2 className="mb-2.5 text-sm font-semibold">Computer level</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {LEVELS.map(l => (
+              <button
+                key={l.depth}
+                type="button"
+                onClick={() => setLevel(l.depth)}
+                aria-pressed={level === l.depth}
+                title={l.blurb}
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-medium transition-transform duration-150',
+                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400',
+                  level === l.depth
+                    ? 'bg-indigo-700 text-slate-100'
+                    : 'surface-raised ink-muted hover:ink',
+                )}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+          <p className="ink-faint mt-2 text-xs">{LEVELS.find(l => l.depth === level)?.blurb}</p>
+        </section>
+
+        <section className="edge surface-panel grid shrink-0 gap-3 rounded-xl border p-4 sm:grid-cols-2">
+          <div>
+            <h2 className="mb-2 text-sm font-semibold">Play a friend</h2>
+            <button
+              type="button"
+              onClick={() => create('pvp')}
+              disabled={pending !== null}
+              className={cn(btnPrimary, 'w-full justify-center')}
+            >
+              <Plus size={16} aria-hidden="true" />
+              {pending === 'create' ? 'Creating…' : 'Create a private game'}
+            </button>
+            <p className="ink-faint mt-1.5 text-xs">You get a code to send them.</p>
+          </div>
+
+          <form onSubmit={join}>
+            <label htmlFor="room-code" className="mb-2 block text-sm font-semibold">
+              Join with a code
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="room-code"
+                value={code}
+                onChange={e => setCode(e.target.value.toUpperCase())}
+                placeholder="ABC123"
+                maxLength={6}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                className="ttt-notation edge surface-raised ink min-w-0 flex-1 rounded-lg border px-3 py-2 text-center tracking-[0.3em] placeholder:tracking-normal placeholder:text-[color:var(--app-ink-faint)] focus:border-indigo-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={code.trim().length < 4 || pending !== null}
+                className={btnPrimary}
+              >
+                {pending === 'join' ? 'Joining…' : 'Join'}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {error && (
+          <p
+            role="alert"
+            className="shrink-0 rounded-lg bg-red-500/15 px-4 py-2.5 text-sm text-red-300"
+          >
+            {error}
+          </p>
+        )}
+
+        <section className="edge surface-panel flex min-h-0 flex-1 flex-col rounded-xl border p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold">Your record</h2>
+            {profile && (
+              <span className="ttt-notation text-sm text-indigo-300">{profile.elo} rating</span>
+            )}
+          </div>
+
+          <dl className="mb-3 grid shrink-0 grid-cols-4 gap-2 text-center">
+            <Stat label="Played" value={profile?.matchesPlayed ?? 0} />
+            <Stat label="Won" value={profile?.wins ?? 0} tone="text-emerald-400" />
+            <Stat label="Lost" value={profile?.losses ?? 0} tone="text-rose-300" />
+            <Stat label="Drawn" value={profile?.draws ?? 0} />
+          </dl>
+
+          {recent.length === 0 ? (
+            <p className="ink-faint text-sm">
+              No games yet. Play online, or send a friend a private code.
+            </p>
+          ) : (
+            <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+              {recent.slice(0, 8).map(match => (
+                <li
+                  key={match.id}
+                  className="surface-raised flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+                >
+                  <Avatar name={match.opponentName} photo={match.opponentPhoto} size={24} />
+                  <Link
+                    to={`/players/${match.opponentUid}`}
+                    className="min-w-0 flex-1 truncate hover:text-indigo-300"
+                  >
+                    {match.opponentName}
+                  </Link>
+                  {match.eloDelta !== null && (
+                    <span
+                      className={cn(
+                        'ttt-notation shrink-0 text-xs',
+                        match.eloDelta > 0
+                          ? 'text-emerald-400'
+                          : match.eloDelta < 0
+                            ? 'text-rose-300'
+                            : 'ink-faint',
+                      )}
                     >
-                      <span className="truncate text-slate-300">vs {match.opponentName}</span>
-                      <span
-                        className={
-                          match.outcome === 'win'
-                            ? 'shrink-0 font-medium text-emerald-300'
-                            : match.outcome === 'loss'
-                              ? 'shrink-0 font-medium text-rose-300'
-                              : 'shrink-0 font-medium text-slate-400'
-                        }
-                      >
-                        {match.outcome === 'win'
-                          ? 'Won'
-                          : match.outcome === 'loss'
-                            ? 'Lost'
-                            : 'Drew'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
+                      {match.eloDelta > 0 ? '+' : ''}
+                      {match.eloDelta}
+                    </span>
+                  )}
+                  <Link
+                    to={`/review/${match.id}`}
+                    className="edge ink-faint hover:ink shrink-0 rounded border px-2 py-0.5 text-[11px] hover:border-indigo-400"
+                  >
+                    Review
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>
@@ -197,11 +312,16 @@ export default function LobbyPage() {
   );
 }
 
+const btnBase =
+  'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:hover:scale-100';
+const btnPrimary = `${btnBase} bg-indigo-700 text-slate-100 hover:bg-indigo-600`;
+const btnGhost = `${btnBase} edge surface-raised ink-muted hover:ink border`;
+
 function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
   return (
-    <div className="rounded-xl bg-slate-900/50 py-3">
-      <dd className={`ttt-notation text-2xl font-semibold ${tone ?? 'text-slate-100'}`}>{value}</dd>
-      <dt className="text-xs text-slate-500">{label}</dt>
+    <div className="surface-raised rounded-lg py-2.5">
+      <dd className={cn('ttt-notation text-xl font-semibold', tone ?? 'ink')}>{value}</dd>
+      <dt className="ink-faint text-xs">{label}</dt>
     </div>
   );
 }

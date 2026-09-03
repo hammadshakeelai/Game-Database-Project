@@ -7,7 +7,7 @@ import { useSocket } from '../features/game/useSocket';
 import { useMatch } from '../features/game/useMatch';
 import { Board, TurnIndicator } from '../features/game/Board';
 import { Spinner } from '../components/Spinner';
-import { ConnectionBanner } from '../components/ConnectionBanner';
+import { ConnectionDot } from '../components/ConnectionDot';
 import type { PublicPlayer } from '../features/game/types';
 import { AnalysisColumn } from '../features/game/AnalysisPanel';
 import { AppShell } from '../components/AppShell';
@@ -95,7 +95,11 @@ export default function GamePage() {
     match.role !== 'spectator' && match.rematchRequestedBy.includes(match.role);
 
   return (
-    <AppShell title="Game" wide>
+    <AppShell
+      title="Game"
+      wide
+      actions={<ConnectionDot connection={connection} error={socketError} />}
+    >
       <div className="w-full px-3 py-4 sm:px-6">
         <header className="mb-4 flex items-center justify-between gap-3">
           <LeaveButton
@@ -104,8 +108,6 @@ export default function GamePage() {
           />
           {match.mode === 'pvp' && <ShareCode code={match.id} />}
         </header>
-
-        <ConnectionBanner connection={connection} error={socketError} />
 
         <section className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-slate-700 bg-slate-800/60 p-3">
           <PlayerChip

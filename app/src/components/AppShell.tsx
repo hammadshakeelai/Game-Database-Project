@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { Bell, LogOut, Moon, Radio, Sun, Swords, Trophy, User, Users } from 'lucide-react';
+import { Bell, LogOut, Moon, Radio, Sun, Swords, Trophy, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useAuth } from '../features/auth/AuthContext';
 import { useTheme } from '../features/theme/ThemeContext';
@@ -27,16 +27,16 @@ interface NavItem {
 const PRIMARY: NavItem[] = [
   { to: '/play', label: 'Play', icon: Swords, end: true },
   { to: '/live', label: 'Live', icon: Radio },
-  { to: '/friends', label: 'Friends', icon: Users },
   { to: '/leaderboard', label: 'Ratings', icon: Trophy },
   { to: '/me', label: 'Profile', icon: User },
 ];
 
-/** Shown in the rail only: the phone tab bar has room for five, not seven. */
-const SECONDARY: NavItem[] = [
-  { to: '/clans', label: 'Clans', icon: Users },
-  { to: '/tournaments', label: 'Tournaments', icon: Trophy },
-];
+/**
+ * Sections still being built. They are listed here rather than in PRIMARY so
+ * that adding one is a one-line change, and so the nav never shows a link that
+ * goes nowhere.
+ */
+const SECONDARY: NavItem[] = [];
 
 export function AppShell({
   children,
@@ -51,12 +51,14 @@ export function AppShell({
   wide?: boolean;
 }) {
   return (
-    <div className="surface-bg flex min-h-dvh flex-col lg:flex-row">
+    <div className="surface-bg flex h-dvh flex-col overflow-hidden lg:flex-row">
       <DesktopRail />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar title={title} actions={actions} />
-        <main className={cn('flex-1', wide ? '' : 'px-4 py-5 sm:px-6', 'pb-20 lg:pb-6')}>
+        <main
+          className={cn('flex-1 overflow-y-auto', wide ? '' : 'px-4 py-5 sm:px-6', 'pb-24 lg:pb-6')}
+        >
           {children}
         </main>
       </div>
@@ -88,14 +90,18 @@ function DesktopRail() {
           ))}
         </ul>
 
-        <p className="ink-faint px-3 pt-4 pb-1 text-[11px] font-semibold tracking-wider uppercase">
-          Community
-        </p>
-        <ul className="space-y-0.5">
-          {SECONDARY.map(item => (
-            <RailLink key={item.to} item={item} />
-          ))}
-        </ul>
+        {SECONDARY.length > 0 && (
+          <>
+            <p className="ink-faint px-3 pt-4 pb-1 text-[11px] font-semibold tracking-wider uppercase">
+              Community
+            </p>
+            <ul className="space-y-0.5">
+              {SECONDARY.map(item => (
+                <RailLink key={item.to} item={item} />
+              ))}
+            </ul>
+          </>
+        )}
       </nav>
 
       <div className="edge flex items-center gap-2 border-t p-3">
@@ -199,7 +205,7 @@ function ThemeButton() {
 function PhoneTabs() {
   return (
     <nav
-      className="edge surface-panel fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t lg:hidden"
+      className="edge surface-panel fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t lg:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Main"
     >

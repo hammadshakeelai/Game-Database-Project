@@ -6,6 +6,7 @@ import SignInPage from './pages/SignInPage';
 import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import LivePage from './pages/LivePage';
 import ProfilePage from './pages/ProfilePage';
 import { Spinner } from './components/Spinner';
 
@@ -56,6 +57,14 @@ export default function App() {
               element={
                 <RequireAuth>
                   <GamePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/live"
+              element={
+                <RequireAuth>
+                  <LivePage />
                 </RequireAuth>
               }
             />

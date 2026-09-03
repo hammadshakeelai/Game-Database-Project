@@ -12,6 +12,7 @@ import {
 } from './matchStore.js';
 import { ensureProfile, recordMatch } from './persistence.js';
 import type { VerifiedUser } from './firebaseAdmin.js';
+import type { Lobby } from './lobby.js';
 
 /**
  * Socket event handlers.
@@ -82,7 +83,7 @@ export function matchView(match: Match, viewerUid: string, store: MatchStore) {
   };
 }
 
-export function registerGameHandlers(io: Server, store: MatchStore): void {
+export function registerGameHandlers(io: Server, store: MatchStore, lobby?: Lobby): void {
   /** Broadcast the current match to everyone in the room, personalised per viewer. */
   function broadcast(match: Match): void {
     for (const socket of io.sockets.adapter.rooms.get(match.id) ?? []) {
@@ -102,6 +103,10 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
     match.status = 'finished';
     match.result = { winner, reason };
     match.finishedAt = Date.now();
+    for (const mark of ['X', 'O'] as Mark[]) {
+      const p = match.players[mark];
+      if (p && p.uid !== BOT_UID) lobby?.setState(p.uid, 'online');
+    }
     match.drawOfferedBy = null;
     store.touch(match);
     broadcast(match);
@@ -269,6 +274,7 @@ export function registerGameHandlers(io: Server, store: MatchStore): void {
       socket.join(match.id);
       socket.data.matchId = match.id;
       store.touch(match);
+      if (match.status === 'active') lobby?.setState(user.uid, 'in_game', match.id);
 
       ack?.({ ok: true, match: matchView(match, user.uid, store) });
       broadcast(match);

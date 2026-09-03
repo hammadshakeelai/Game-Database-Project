@@ -7,6 +7,7 @@ import { PORT, clientOrigins, isProduction, usingEmulators } from './env.js';
 import { adminConfigured, verifyIdToken } from './firebaseAdmin.js';
 import { MatchStore } from './matchStore.js';
 import { registerGameHandlers } from './gameHandlers.js';
+import { Lobby, registerLobbyHandlers } from './lobby.js';
 import {
   getLeaderboard,
   getProfile,
@@ -77,7 +78,9 @@ export async function createApp() {
     }
   });
 
-  registerGameHandlers(io, store);
+  const lobby = new Lobby();
+  registerGameHandlers(io, store, lobby);
+  registerLobbyHandlers(io, store, lobby);
 
   // -----------------------------------------------------------------
   // HTTP API
@@ -149,7 +152,7 @@ export async function createApp() {
     app.use(vite.middlewares);
   }
 
-  return { app, httpServer, io, store };
+  return { app, httpServer, io, store, lobby };
 }
 
 async function main() {
