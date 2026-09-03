@@ -29,6 +29,7 @@ export type AuthStatus = 'loading' | 'signed-in' | 'signed-out' | 'unconfigured'
 export interface Profile {
   displayName: string;
   photoURL: string | null;
+  elo: number;
   matchesPlayed: number;
   wins: number;
   losses: number;
@@ -37,9 +38,13 @@ export interface Profile {
 
 export interface RecentMatch {
   id: string;
+  opponentUid: string;
   opponentName: string;
+  opponentPhoto: string | null;
   outcome: 'win' | 'loss' | 'draw';
+  reason: string;
   movesCount: number;
+  eloDelta: number | null;
   finishedAt: number;
 }
 
@@ -97,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return;
       const data = (await res.json()) as {
+        uid: string;
         name: string;
         photoURL: string | null;
         profile: Omit<Profile, 'displayName' | 'photoURL'> | null;
@@ -105,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile({
         displayName: data.name,
         photoURL: data.photoURL,
+        elo: data.profile?.elo ?? 1200,
         matchesPlayed: data.profile?.matchesPlayed ?? 0,
         wins: data.profile?.wins ?? 0,
         losses: data.profile?.losses ?? 0,

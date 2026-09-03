@@ -4,16 +4,42 @@
       "collectionGroup": "match_records",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "playerX", "order": "ASCENDING" },
-        { "fieldPath": "finishedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "playerX",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "finishedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "match_records",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "playerO", "order": "ASCENDING" },
-        { "fieldPath": "finishedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "playerO",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "finishedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "matchesPlayed",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "elo",
+          "order": "DESCENDING"
+        }
       ]
     }
   ],

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Bot, LogOut, Plus, Users } from 'lucide-react';
+import { Bot, Plus, Users } from 'lucide-react';
 import { useAuth } from '../features/auth/AuthContext';
 import { useSocket } from '../features/game/useSocket';
 import { ERROR_COPY, type ErrorCode, type MatchView } from '../features/game/types';
 import { Spinner } from '../components/Spinner';
+import { AppShell } from '../components/AppNav';
 import { ConnectionBanner } from '../components/ConnectionBanner';
 
 type AckResponse = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
@@ -13,7 +14,7 @@ type AckResponse = { ok: true; match: MatchView } | { ok: false; code: ErrorCode
 /** Home screen: start a game, join one, or play the computer. */
 export default function LobbyPage() {
   const navigate = useNavigate();
-  const { user, profile, recent, statsLoading, signOut, refreshStats } = useAuth();
+  const { profile, recent, statsLoading, refreshStats } = useAuth();
   const { socket, connection, error: socketError } = useSocket();
 
   const [code, setCode] = useState('');
@@ -58,40 +59,8 @@ export default function LobbyPage() {
   );
 
   return (
-    <main className="min-h-dvh bg-slate-900 px-4 py-6 sm:px-6 sm:py-10">
-      <div className="mx-auto w-full max-w-2xl">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            {profile?.photoURL ? (
-              <img
-                src={profile.photoURL}
-                alt=""
-                className="h-10 w-10 shrink-0 rounded-full border border-slate-700"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-bold text-slate-900">
-                {(profile?.displayName ?? user?.displayName ?? '?').charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="truncate font-semibold text-slate-100">
-                {profile?.displayName ?? user?.displayName ?? 'Player'}
-              </p>
-              <p className="text-xs text-slate-500">Signed in with Google</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-slate-800 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
-          >
-            <LogOut size={16} aria-hidden="true" />
-            <span className="hidden sm:inline">Sign out</span>
-            <span className="sr-only sm:hidden">Sign out</span>
-          </button>
-        </header>
-
+    <AppShell>
+      <div className="w-full">
         <ConnectionBanner connection={connection} error={socketError} />
 
         <motion.section
@@ -224,7 +193,7 @@ export default function LobbyPage() {
           )}
         </section>
       </div>
-    </main>
+    </AppShell>
   );
 }
 

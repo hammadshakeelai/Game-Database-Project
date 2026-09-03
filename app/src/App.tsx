@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import SignInPage from './pages/SignInPage';
 import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import ProfilePage from './pages/ProfilePage';
 import { Spinner } from './components/Spinner';
 
 /**
@@ -52,6 +54,30 @@ export default function App() {
             element={
               <RequireAuth>
                 <GamePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <RequireAuth>
+                <LeaderboardPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/me"
+            element={
+              <RequireAuth>
+                <ProfilePage self />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/players/:uid"
+            element={
+              <RequireAuth>
+                <ProfilePage />
               </RequireAuth>
             }
           />

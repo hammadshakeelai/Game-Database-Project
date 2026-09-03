@@ -194,9 +194,13 @@ function outcomeFor(mark: Mark, winner: Mark | 'Draw'): Outcome {
 
 export interface RecentMatch {
   id: string;
+  opponentUid: string;
   opponentName: string;
+  opponentPhoto: string | null;
   outcome: 'win' | 'loss' | 'draw';
+  reason: string;
   movesCount: number;
+  eloDelta: number | null;
   finishedAt: number;
 }
 
@@ -225,16 +229,22 @@ export async function getRecentMatches(uid: string, limit = 10): Promise<RecentM
       const d = doc.data();
       const mark: Mark = d.playerX === uid ? 'X' : 'O';
       const winner = d.winner as Mark | 'Draw';
+      const before = d.eloBefore?.[mark];
+      const after = d.eloAfter?.[mark];
       return {
         id: doc.id,
+        opponentUid: mark === 'X' ? d.playerO : d.playerX,
         opponentName: mark === 'X' ? d.playerOName : d.playerXName,
+        opponentPhoto: (mark === 'X' ? d.playerOPhoto : d.playerXPhoto) ?? null,
         outcome:
           winner === 'Draw'
             ? ('draw' as const)
             : winner === mark
               ? ('win' as const)
               : ('loss' as const),
+        reason: (d.reason as string) ?? 'line',
         movesCount: d.movesCount as number,
+        eloDelta: typeof before === 'number' && typeof after === 'number' ? after - before : null,
         finishedAt: d.finishedAt as number,
       };
     });
@@ -243,5 +253,98 @@ export async function getRecentMatches(uid: string, limit = 10): Promise<RecentM
   } catch (err) {
     console.error('[persistence] getRecentMatches failed:', (err as Error).message);
     return [];
+  }
+}
+
+export interface LeaderboardRow {
+  uid: string;
+  displayName: string;
+  photoURL: string | null;
+  elo: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  matchesPlayed: number;
+}
+
+/**
+ * Top players by rating.
+ *
+ * Only players who have actually finished a game appear: an empty profile at the
+ * starting rating is not a standing, and letting them fill the board would make
+ * the table meaningless the day the app gets popular.
+ */
+export async function getLeaderboard(limit = 50): Promise<LeaderboardRow[]> {
+  if (!adminConfigured) return [];
+  try {
+    const snap = await adminDb()
+      .collection('users')
+      .where('matchesPlayed', '>', 0)
+      .orderBy('matchesPlayed', 'desc')
+      .orderBy('elo', 'desc')
+      .limit(limit)
+      .get();
+
+    return snap.docs
+      .map(doc => {
+        const d = doc.data();
+        return {
+          uid: doc.id,
+          displayName: (d.displayName as string) ?? 'Player',
+          photoURL: (d.photoURL as string | null) ?? null,
+          elo: (d.elo as number) ?? STARTING_ELO,
+          wins: (d.wins as number) ?? 0,
+          losses: (d.losses as number) ?? 0,
+          draws: (d.draws as number) ?? 0,
+          matchesPlayed: (d.matchesPlayed as number) ?? 0,
+        };
+      })
+      // Firestore cannot order by elo as the primary key while also filtering on
+      // matchesPlayed, so the final ranking is applied here.
+      .sort((a, b) => b.elo - a.elo);
+  } catch (err) {
+    console.error('[persistence] getLeaderboard failed:', (err as Error).message);
+    return [];
+  }
+}
+
+export interface PublicProfile {
+  uid: string;
+  displayName: string;
+  photoURL: string | null;
+  elo: number;
+  matchesPlayed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  createdAt: number;
+  recent: RecentMatch[];
+}
+
+/** Anyone signed in may view any player's record. */
+export async function getPublicProfile(uid: string): Promise<PublicProfile | null> {
+  if (!adminConfigured) return null;
+  try {
+    const [snap, recent] = await Promise.all([
+      adminDb().collection('users').doc(uid).get(),
+      getRecentMatches(uid, 10),
+    ]);
+    if (!snap.exists) return null;
+    const d = snap.data()!;
+    return {
+      uid,
+      displayName: (d.displayName as string) ?? 'Player',
+      photoURL: (d.photoURL as string | null) ?? null,
+      elo: (d.elo as number) ?? STARTING_ELO,
+      matchesPlayed: (d.matchesPlayed as number) ?? 0,
+      wins: (d.wins as number) ?? 0,
+      losses: (d.losses as number) ?? 0,
+      draws: (d.draws as number) ?? 0,
+      createdAt: (d.createdAt as number) ?? 0,
+      recent,
+    };
+  } catch (err) {
+    console.error('[persistence] getPublicProfile failed:', (err as Error).message);
+    return null;
   }
 }

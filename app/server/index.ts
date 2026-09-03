@@ -7,7 +7,12 @@ import { PORT, clientOrigins, isProduction, usingEmulators } from './env.js';
 import { adminConfigured, verifyIdToken } from './firebaseAdmin.js';
 import { MatchStore } from './matchStore.js';
 import { registerGameHandlers } from './gameHandlers.js';
-import { getProfile, getRecentMatches } from './persistence.js';
+import {
+  getLeaderboard,
+  getProfile,
+  getPublicProfile,
+  getRecentMatches,
+} from './persistence.js';
 
 /**
  * Server entry point. Serves the built SPA and hosts the authoritative game.
@@ -107,6 +112,28 @@ export async function createApp() {
     if (!user) return;
     const [profile, recent] = await Promise.all([getProfile(user.uid), getRecentMatches(user.uid)]);
     res.json({ uid: user.uid, name: user.name, photoURL: user.picture, profile, recent });
+  });
+
+  app.get('/api/leaderboard', async (req, res) => {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    res.json({ rows: await getLeaderboard() });
+  });
+
+  app.get('/api/players/:uid', async (req, res) => {
+    const user = await requireUser(req, res);
+    if (!user) return;
+    const uid = req.params.uid;
+    if (typeof uid !== 'string' || uid.length === 0 || uid.length > 128) {
+      res.status(400).json({ error: 'Bad player id.' });
+      return;
+    }
+    const profile = await getPublicProfile(uid);
+    if (!profile) {
+      res.status(404).json({ error: 'No such player.' });
+      return;
+    }
+    res.json(profile);
   });
 
   // -----------------------------------------------------------------
