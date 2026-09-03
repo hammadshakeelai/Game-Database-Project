@@ -76,6 +76,8 @@ export class MatchStore {
     host: Omit<MatchPlayer, 'disconnectedAt'>;
     mode: MatchMode;
     botDifficulty?: number;
+    /** Which bot from the roster is playing, when mode is 'bot'. */
+    botName?: string;
     /** Host plays X by default; a rematch swaps so both players get to start. */
     hostMark?: Mark;
     id?: string;
@@ -86,7 +88,13 @@ export class MatchStore {
 
     const bot: MatchPlayer | null =
       opts.mode === 'bot'
-        ? { uid: BOT_UID, name: 'Computer', photoURL: null, socketId: null, disconnectedAt: null }
+        ? {
+            uid: BOT_UID,
+            name: opts.botName ?? 'Computer',
+            photoURL: null,
+            socketId: null,
+            disconnectedAt: null,
+          }
         : null;
 
     const match: Match = {

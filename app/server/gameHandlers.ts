@@ -13,6 +13,7 @@ import {
 import { ensureProfile, recordMatch } from './persistence.js';
 import type { VerifiedUser } from './firebaseAdmin.js';
 import type { Lobby } from './lobby.js';
+import { findBot } from '../src/bots.js';
 
 /**
  * Socket event handlers.
@@ -188,17 +189,22 @@ export function registerGameHandlers(io: Server, store: MatchStore, lobby?: Lobb
     // Create a room
     // ---------------------------------------------------------------
     socket.on('create_match', (payload: unknown, ack?: (r: unknown) => void) => {
-      const opts = (payload ?? {}) as { mode?: string; botDifficulty?: number };
+      const opts = (payload ?? {}) as { mode?: string; botDifficulty?: number; botId?: unknown };
       const mode = opts.mode === 'bot' ? 'bot' : 'pvp';
+      // A named bot from the roster wins over a raw difficulty number, so the
+      // opponent shown in the lobby is the opponent shown at the board.
+      const bot = mode === 'bot' ? findBot(opts.botId) : null;
       const difficulty =
-        typeof opts.botDifficulty === 'number'
+        bot?.level ??
+        (typeof opts.botDifficulty === 'number'
           ? Math.min(5, Math.max(1, Math.round(opts.botDifficulty)))
-          : 3;
+          : 3);
 
       const user = me();
       const match = store.create({
         mode,
         botDifficulty: difficulty,
+        botName: bot?.name,
         host: { uid: user.uid, name: user.name, photoURL: user.picture, socketId: socket.id },
       });
 

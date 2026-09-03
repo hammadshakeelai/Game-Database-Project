@@ -7,17 +7,9 @@ import { ERROR_COPY, type ErrorCode, type MatchView } from '../features/game/typ
 import { AppShell, Avatar } from '../components/AppShell';
 import { ConnectionDot } from '../components/ConnectionDot';
 import { cn } from '../utils';
+import { BOT_TIERS, type BotProfile } from '../bots';
 
 type Ack = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
-
-/** Bot levels map to minimax search depth. */
-const LEVELS = [
-  { depth: 1, name: 'Casual', blurb: 'Plays the first thing that looks fine.' },
-  { depth: 2, name: 'Steady', blurb: 'Sees the move in front of it.' },
-  { depth: 3, name: 'Sharp', blurb: 'Looks a few moves ahead.' },
-  { depth: 4, name: 'Tough', blurb: 'Punishes a loose square.' },
-  { depth: 5, name: 'Brutal', blurb: 'Searches deep. Good luck.' },
-];
 
 export default function LobbyPage() {
   const navigate = useNavigate();
@@ -29,7 +21,6 @@ export default function LobbyPage() {
   const [pending, setPending] = useState<null | 'create' | 'join' | 'bot'>(null);
   const [queued, setQueued] = useState(false);
   const [noOpponent, setNoOpponent] = useState(false);
-  const [level, setLevel] = useState(3);
 
   useEffect(() => {
     void refreshStats();
@@ -62,6 +53,20 @@ export default function LobbyPage() {
       socket.off('queue_left', onLeft);
     };
   }, [socket, navigate]);
+
+  const playBot = useCallback(
+    (bot: BotProfile) => {
+      if (!socket || pending) return;
+      setPending('bot');
+      setError(null);
+      socket.emit('create_match', { mode: 'bot', botId: bot.id }, (res: Ack) => {
+        setPending(null);
+        if (res.ok) navigate(`/play/${res.match.id}`);
+        else setError(ERROR_COPY[res.code] ?? res.message);
+      });
+    },
+    [socket, navigate, pending],
+  );
 
   const create = useCallback(
     (mode: 'pvp' | 'bot', botDifficulty?: number) => {
@@ -129,7 +134,7 @@ export default function LobbyPage() {
 
           <button
             type="button"
-            onClick={() => create('bot', level)}
+            onClick={() => playBot(BOT_TIERS[2]!.bots[0]!)}
             disabled={pending !== null}
             className="edge surface-panel group flex flex-col items-start gap-1.5 rounded-xl border p-5 text-left transition-transform duration-150 hover:-translate-y-0.5 hover:border-indigo-500 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:opacity-60 motion-reduce:hover:translate-y-0"
           >
@@ -138,7 +143,7 @@ export default function LobbyPage() {
             </span>
             <span className="text-lg font-semibold">Play the computer</span>
             <span className="ink-faint text-sm">
-              {LEVELS.find(l => l.depth === level)?.name}. Practice only, no rating change.
+              Ten opponents, from learner to expert. Pick one below.
             </span>
           </button>
         </section>
@@ -148,7 +153,11 @@ export default function LobbyPage() {
             <p className="ink flex-1 text-sm">
               Nobody else is looking right now. Play the computer instead, or wait a bit longer.
             </p>
-            <button type="button" onClick={() => create('bot', level)} className={btnPrimary}>
+            <button
+              type="button"
+              onClick={() => playBot(BOT_TIERS[2]!.bots[0]!)}
+              className={btnPrimary}
+            >
               Play the computer
             </button>
             <button
@@ -173,28 +182,30 @@ export default function LobbyPage() {
         )}
 
         <section className="edge surface-panel shrink-0 rounded-xl border p-4">
-          <h2 className="mb-2.5 text-sm font-semibold">Computer level</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {LEVELS.map(l => (
-              <button
-                key={l.depth}
-                type="button"
-                onClick={() => setLevel(l.depth)}
-                aria-pressed={level === l.depth}
-                title={l.blurb}
-                className={cn(
-                  'rounded-lg px-3 py-1.5 text-sm font-medium transition-transform duration-150',
-                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400',
-                  level === l.depth
-                    ? 'bg-indigo-700 text-slate-100'
-                    : 'surface-raised ink-muted hover:ink',
-                )}
-              >
-                {l.name}
-              </button>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold">Computer opponents</h2>
+            <span className="ink-faint text-xs">Practice only. Ratings do not change.</span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {BOT_TIERS.map(tier => (
+              <div key={tier.label}>
+                <p className="ink-faint mb-1.5 text-[11px] font-semibold tracking-wider uppercase">
+                  {tier.label}
+                  <span className="ml-1.5 font-normal normal-case tracking-normal">
+                    {tier.blurb}
+                  </span>
+                </p>
+                <ul className="space-y-1">
+                  {tier.bots.map(bot => (
+                    <li key={bot.id}>
+                      <BotRow bot={bot} busy={pending === 'bot'} onPlay={() => playBot(bot)} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
-          <p className="ink-faint mt-2 text-xs">{LEVELS.find(l => l.depth === level)?.blurb}</p>
         </section>
 
         <section className="edge surface-panel grid shrink-0 gap-3 rounded-xl border p-4 sm:grid-cols-2">
@@ -323,5 +334,26 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: str
       <dd className={cn('ttt-notation text-xl font-semibold', tone ?? 'ink')}>{value}</dd>
       <dt className="ink-faint text-xs">{label}</dt>
     </div>
+  );
+}
+
+function BotRow({ bot, busy, onPlay }: { bot: BotProfile; busy: boolean; onPlay: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onPlay}
+      disabled={busy}
+      title={bot.blurb}
+      className="edge surface-raised flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-transform duration-150 hover:scale-[1.01] hover:border-indigo-500 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 disabled:opacity-50 motion-reduce:hover:scale-100"
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-900 text-indigo-200">
+        <Bot size={14} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="ink block truncate text-sm font-medium">{bot.name}</span>
+        <span className="ink-faint block truncate text-[11px]">{bot.blurb}</span>
+      </span>
+      <span className="ttt-notation ink-faint shrink-0 text-xs">{bot.rating}</span>
+    </button>
   );
 }

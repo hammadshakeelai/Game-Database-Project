@@ -5,12 +5,13 @@ import { ArrowLeft, Check, Copy, Flag, Handshake, Lightbulb } from 'lucide-react
 import { useAuth } from '../features/auth/AuthContext';
 import { useSocket } from '../features/game/useSocket';
 import { useMatch } from '../features/game/useMatch';
-import { Board, TurnIndicator } from '../features/game/Board';
+import { Board } from '../features/game/Board';
 import { Spinner } from '../components/Spinner';
 import { ConnectionDot } from '../components/ConnectionDot';
-import type { PublicPlayer } from '../features/game/types';
+import type { MatchView, PublicPlayer } from '../features/game/types';
 import { AnalysisColumn } from '../features/game/AnalysisPanel';
 import { AppShell } from '../components/AppShell';
+import { cn } from '../utils';
 
 export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -129,6 +130,8 @@ export default function GamePage() {
 
         {match.status === 'waiting' && <WaitingNotice code={match.id} />}
 
+        <TurnBanner match={match} isMyTurn={isMyTurn} />
+
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-center">
           <div className="flex min-w-0 flex-col items-center">
             <Board
@@ -138,9 +141,6 @@ export default function GamePage() {
               hint={hint}
               onCellClick={makeMove}
             />
-            <div className="mt-3 min-h-6 text-center">
-              <TurnIndicator state={match.state} role={match.role} status={match.status} />
-            </div>
           </div>
 
           <AnalysisColumn
@@ -277,6 +277,62 @@ function LeaveButton({ forfeits, onLeave }: { forfeits: boolean; onLeave: () => 
     </button>
   );
 }
+
+/**
+ * Whose move it is, stated where the eye already is.
+ *
+ * This used to be a line of small text below the board, which on a laptop sat
+ * under the fold. A player looking at a live game with four boards still open
+ * could not tell whether it was their move or whether the game had stalled.
+ */
+function TurnBanner({ match, isMyTurn }: { match: MatchView; isMyTurn: boolean }) {
+  if (match.status === 'finished') return null;
+
+  if (match.status === 'waiting') {
+    return (
+      <p className="edge surface-panel mb-3 rounded-lg border px-4 py-2.5 text-center text-sm">
+        <span className="ink-muted">Waiting for an opponent to join.</span>
+      </p>
+    );
+  }
+
+  const target = match.state.nextRequiredSubBoard;
+  const decided = match.state.subBoardWinners.filter(w => w !== null).length;
+
+  return (
+    <div
+      aria-live="polite"
+      className={cn(
+        'mb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-lg border px-4 py-2.5 text-sm',
+        isMyTurn ? 'border-emerald-500/60 bg-emerald-500/10' : 'edge surface-panel',
+      )}
+    >
+      <span className={cn('font-semibold', isMyTurn ? 'text-emerald-400' : 'ink-muted')}>
+        {isMyTurn ? 'Your move' : `Waiting for ${match.state.currentPlayer}`}
+      </span>
+      {isMyTurn && (
+        <span className="ink-muted">
+          {target === null
+            ? 'Play in any open board'
+            : `Play in the ${POSITION_NAMES[target]} board`}
+        </span>
+      )}
+      <span className="ttt-notation ink-faint text-xs">{decided}/9 boards decided</span>
+    </div>
+  );
+}
+
+const POSITION_NAMES = [
+  'top left',
+  'top centre',
+  'top right',
+  'middle left',
+  'centre',
+  'middle right',
+  'bottom left',
+  'bottom centre',
+  'bottom right',
+];
 
 function Centered({ title, body }: { title: string; body: string }) {
   return (
