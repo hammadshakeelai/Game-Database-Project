@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 import { isValidMove } from '../../gameLogic';
 import type { Move } from '../../types';
+import type { AccuracyLabel, MoveAccuracyLog } from '../../types';
 import {
   ERROR_COPY,
   type ChatMessage,
@@ -29,6 +30,10 @@ interface UseMatchResult {
   actionError: string | null;
   messages: ChatMessage[];
   hint: Move | null;
+  /** Engine score for the current position, positive favouring X. */
+  evaluation: number;
+  /** Per-move grading, in play order. */
+  accuracyLog: MoveAccuracyLog[];
   /** Set when a rematch is ready and the players should move to a new game. */
   rematchMatchId: string | null;
   expired: boolean;
@@ -52,6 +57,8 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
   const [actionError, setActionError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [hint, setHint] = useState<Move | null>(null);
+  const [evaluation, setEvaluation] = useState(0);
+  const [accuracyLog, setAccuracyLog] = useState<MoveAccuracyLog[]>([]);
   const [rematchMatchId, setRematchMatchId] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
 
@@ -67,6 +74,8 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
     setJoinError(null);
     setExpired(false);
     setMessages([]);
+    setAccuracyLog([]);
+    setEvaluation(0);
     setRematchMatchId(null);
 
     /** Join, and re-join automatically after any reconnect. */
@@ -88,9 +97,24 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
 
     const onUpdate = (view: MatchView) => setMatch(view);
 
-    // The server always sends an authoritative match_update straight after a
-    // move, so this only needs to clear the now-stale hint.
-    const onMove = (_evt: MoveEvent) => setHint(null);
+    /**
+     * The server grades every move as it applies it, so the client keeps the
+     * running log rather than re-running minimax in the browser.
+     */
+    const onMove = (evt: MoveEvent) => {
+      setHint(null);
+      if (typeof evt.evaluation === 'number') setEvaluation(evt.evaluation);
+      if (evt.accuracy) {
+        setAccuracyLog(prev => [
+          ...prev,
+          {
+            move: evt.move,
+            label: evt.accuracy!.label as AccuracyLabel,
+            delta: evt.accuracy!.heuristicDelta,
+          },
+        ]);
+      }
+    };
 
     const onError = (err: GameError) => {
       setActionError(ERROR_COPY[err.code] ?? err.message);
@@ -182,6 +206,8 @@ export function useMatch(socket: Socket | null, matchId: string | undefined): Us
     actionError,
     messages,
     hint,
+    evaluation,
+    accuracyLog,
     rematchMatchId,
     expired,
     makeMove,

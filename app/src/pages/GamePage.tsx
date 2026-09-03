@@ -9,11 +9,12 @@ import { Board, TurnIndicator } from '../features/game/Board';
 import { Spinner } from '../components/Spinner';
 import { ConnectionBanner } from '../components/ConnectionBanner';
 import type { PublicPlayer } from '../features/game/types';
+import { AnalysisColumn } from '../features/game/AnalysisPanel';
 
 export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { refreshStats } = useAuth();
+  const { refreshStats, user } = useAuth();
   const { socket, connection, error: socketError } = useSocket();
   const {
     match,
@@ -21,6 +22,10 @@ export default function GamePage() {
     joinError,
     actionError,
     hint,
+    evaluation,
+    accuracyLog,
+    messages,
+    sendMessage,
     rematchMatchId,
     expired,
     makeMove,
@@ -90,7 +95,7 @@ export default function GamePage() {
 
   return (
     <main className="min-h-dvh bg-slate-900 px-3 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto w-full max-w-xl">
+      <div className="mx-auto w-full max-w-4xl">
         <header className="mb-4 flex items-center justify-between gap-3">
           <LeaveButton
             forfeits={match.status === 'active' && match.role !== 'spectator'}
@@ -121,18 +126,28 @@ export default function GamePage() {
 
         {match.status === 'waiting' && <WaitingNotice code={match.id} />}
 
-        <div className="mb-4 flex justify-center">
-          <Board
-            state={match.state}
-            role={match.role}
-            interactive={match.status === 'active'}
-            hint={hint}
-            onCellClick={makeMove}
-          />
-        </div>
+        <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-center">
+          <div className="flex min-w-0 flex-col items-center">
+            <Board
+              state={match.state}
+              role={match.role}
+              interactive={match.status === 'active'}
+              hint={hint}
+              onCellClick={makeMove}
+            />
+            <div className="mt-3 min-h-6 text-center">
+              <TurnIndicator state={match.state} role={match.role} status={match.status} />
+            </div>
+          </div>
 
-        <div className="mb-4 min-h-6 text-center">
-          <TurnIndicator state={match.state} role={match.role} status={match.status} />
+          <AnalysisColumn
+            evaluation={evaluation}
+            log={accuracyLog}
+            messages={messages}
+            onSend={sendMessage}
+            myUid={user?.uid}
+            role={match.role}
+          />
         </div>
 
         <AnimatePresence>

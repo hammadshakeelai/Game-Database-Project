@@ -54,7 +54,7 @@ export interface ChatMessage {
 
 export interface MoveEvent {
   move: Move;
-  accuracy: { label: string; heuristicDelta: number } | null;
+  accuracy: { label: string; heuristicDelta: number; bestMove: Move | null } | null;
   evaluation: number;
 }
 
