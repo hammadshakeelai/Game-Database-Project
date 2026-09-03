@@ -96,11 +96,11 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
           <img
             src={profile.photoURL}
             alt=""
-            className="h-16 w-16 rounded-full border border-slate-600"
+            className="h-14 w-14 shrink-0 rounded-full border border-slate-600 sm:h-16 sm:w-16"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-700 text-2xl font-semibold text-slate-300">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-700 text-2xl font-semibold text-slate-300 sm:h-16 sm:w-16">
             {profile.displayName.charAt(0).toUpperCase()}
           </span>
         )}
@@ -118,7 +118,7 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
         </div>
       </header>
 
-      <dl className="mb-8 grid grid-cols-4 gap-2 sm:gap-3">
+      <dl className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         <Stat label="Rating" value={profile.elo} tone="text-indigo-300" />
         <Stat label="Won" value={profile.wins} tone="text-emerald-300" />
         <Stat label="Lost" value={profile.losses} tone="text-rose-300" />

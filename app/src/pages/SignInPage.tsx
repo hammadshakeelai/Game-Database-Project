@@ -109,7 +109,7 @@ export default function SignInPage() {
 
       {/* Try it. No account needed. */}
       <div className="lg:flex-1">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 min-[420px]:grid-cols-2">
           <ClassicDemo />
           <UltimateDemo />
         </div>

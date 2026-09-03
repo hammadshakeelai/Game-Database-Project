@@ -151,7 +151,7 @@ export default function LobbyPage() {
             <Spinner label="Loading your record" />
           ) : (
             <>
-              <dl className="mb-5 grid grid-cols-4 gap-3 text-center">
+              <dl className="mb-5 grid grid-cols-2 gap-2 text-center sm:grid-cols-4 sm:gap-3">
                 <Stat label="Played" value={profile?.matchesPlayed ?? 0} />
                 <Stat label="Won" value={profile?.wins ?? 0} tone="text-emerald-300" />
                 <Stat label="Lost" value={profile?.losses ?? 0} tone="text-rose-300" />

@@ -136,9 +136,10 @@ function SubBoard({
             disabled={disabled}
             className={cn(
               'ttt-cell flex items-center justify-center rounded-lg',
-              // Sized so nine sub-boards fit a 360px phone without page scroll,
-              // while keeping the tap target usable.
-              'h-[9.5vw] w-[9.5vw] text-[4vw] sm:h-14 sm:w-14 sm:text-2xl md:h-16 md:w-16 md:text-3xl',
+              // Sized from the smaller viewport axis, so the board fits a short
+              // landscape phone as well as a narrow portrait one, and stops
+              // growing once there is desktop room to spare.
+              'h-[min(9.2vw,2.6rem)] w-[min(9.2vw,2.6rem)] text-[min(4.4vw,1.4rem)]',
               'font-bold transition-transform',
               !disabled && 'playable cursor-pointer hover:scale-105 active:scale-95',
               cell === 'X' && 'x-piece',
