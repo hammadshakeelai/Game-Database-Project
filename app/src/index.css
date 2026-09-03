@@ -1,452 +1,265 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   Dark Royal palette — deep purple-black background,
-   ivory text, vibrant purple accents.
-   Tailwind v4 design tokens overridden via @theme.
+   Super Tic-Tac-Toe — "club scoresheet"
+
+   Design read (docs/implementation-plan-v3.md Part A):
+     Mode      Operate, with one Persuade page (sign-in)
+     Metaphor  a game recorded on paper at a card table
+     Risk      a mid-lightness baize ground, rather than the
+               dark-app default or the light-editorial reflex
+
+   The ground is card-table felt. Marks are made in chalk and
+   red pencil. The one accent is brass, spent on the action the
+   player is meant to take next and on nothing else.
    ============================================================ */
 
 @theme {
-  /* Dark plum + ivory palette — darker than the original ivory theme,
-     but ivory is present on text, cards, borders, and accent glows so
-     it feels warm rather than charcoal-cold.
-     900 = page background (deep mocha-plum)
-     800 = card surface (warm mid-tone)
-     700 = input + border (warm violet-ivory)
-     600 = hover/divider
-     500..100 = progressively brighter ivory foreground */
-  --color-slate-900: #1f1830;
-  --color-slate-800: #2e2541;
-  --color-slate-700: #463957;
-  --color-slate-600: #695776;
-  --color-slate-500: #9e92a8;
-  --color-slate-400: #cdc1cf;
-  --color-slate-300: #ddd0d4;
-  --color-slate-200: #ebe0d6;
-  --color-slate-100: #f4ecd9;
+  /* --- Ground: baize, dark to light -------------------------
+     Tailwind's slate-* scale is remapped so the whole app moves
+     onto this palette at once. Names are inherited; meaning is
+     "surface depth", not "grey". */
+  --color-slate-900: oklch(0.345 0.042 156); /* the table itself */
+  --color-slate-800: oklch(0.395 0.04 155); /* card raised off the table */
+  --color-slate-700: oklch(0.475 0.035 154); /* border */
+  --color-slate-600: oklch(0.55 0.03 153); /* divider, strong border */
+  --color-slate-500: oklch(0.71 0.024 130); /* faint ink */
+  --color-slate-400: oklch(0.82 0.02 105); /* muted ink */
+  --color-slate-300: oklch(0.89 0.016 95); /* soft ink */
+  --color-slate-200: oklch(0.945 0.014 90); /* ink */
+  --color-slate-100: oklch(0.975 0.012 88); /* bright ink */
 
-  /* Indigo recoloured as a vibrant royal purple (player X + primary CTA) */
-  --color-indigo-100: #ece1f7;
-  --color-indigo-200: #cfb8ec;
-  --color-indigo-300: #a884d4;
-  --color-indigo-400: #8b65c8;
-  --color-indigo-500: #7548b8;
-  --color-indigo-600: #6336a0;
-  --color-indigo-700: #4d2880;
-  --color-indigo-800: #361a5e;
-  --color-indigo-900: #221040;
+  /* --- Accent: brass. The only accent. ---------------------- */
+  /* Polished brass: high lightness and real chroma, so it separates
+     from a mid-tone ground instead of sinking into it as olive. */
+  --color-indigo-100: oklch(0.97 0.035 92);
+  --color-indigo-200: oklch(0.94 0.07 90);
+  --color-indigo-300: oklch(0.9 0.11 88);
+  --color-indigo-400: oklch(0.86 0.14 86);
+  --color-indigo-500: oklch(0.83 0.155 85);
+  --color-indigo-600: oklch(0.8 0.16 84);
+  --color-indigo-700: oklch(0.72 0.15 82);
+  --color-indigo-800: oklch(0.6 0.13 80);
+  --color-indigo-900: oklch(0.45 0.1 78);
 
-  /* Violet aligned for review / branch UI */
-  --color-violet-300: #c5aae0;
-  --color-violet-400: #9a7bd6;
-  --color-violet-500: #7e58c4;
-  --color-violet-600: #6442a8;
-  --color-violet-700: #4b3088;
-  --color-violet-800: #321e60;
+  /* Violet folded into brass: there is one accent, not two. */
+  --color-violet-300: oklch(0.9 0.11 88);
+  --color-violet-400: oklch(0.86 0.14 86);
+  --color-violet-500: oklch(0.83 0.155 85);
+  --color-violet-600: oklch(0.8 0.16 84);
+  --color-violet-700: oklch(0.72 0.15 82);
+  --color-violet-800: oklch(0.6 0.13 80);
 
-  /* Rose — warm magenta for player O */
-  --color-rose-100: #f6dde6;
-  --color-rose-200: #e9a8b8;
-  --color-rose-300: #d97a8f;
-  --color-rose-400: #c4566c;
-  --color-rose-500: #ad3a55;
-  --color-rose-600: #8e2842;
+  /* --- Red pencil: player O, and danger --------------------- */
+  --color-rose-100: oklch(0.94 0.04 30);
+  --color-rose-200: oklch(0.88 0.09 31);
+  --color-rose-300: oklch(0.81 0.14 32);
+  --color-rose-400: oklch(0.7 0.145 32);
+  --color-rose-500: oklch(0.63 0.16 31);
+  --color-rose-600: oklch(0.55 0.15 30);
+  --color-red-300: oklch(0.78 0.11 28);
+  --color-red-400: oklch(0.71 0.145 27);
+  --color-red-500: oklch(0.64 0.17 27);
+  --color-red-600: oklch(0.56 0.16 26);
 
-  /* Emerald — gentle sage for active / success */
-  --color-emerald-300: #95c2a3;
-  --color-emerald-400: #79ad88;
-  --color-emerald-500: #5f9670;
-  --color-emerald-600: #487a58;
-  --color-emerald-700: #355e42;
+  /* --- Chalk mint: positive states. Must read LIGHT, because
+         a mid-green "success" colour vanishes on a green ground. */
+  --color-emerald-300: oklch(0.89 0.09 168);
+  --color-emerald-400: oklch(0.85 0.105 166);
+  --color-emerald-500: oklch(0.79 0.115 165);
+  --color-emerald-600: oklch(0.7 0.11 164);
+  --color-emerald-700: oklch(0.6 0.1 163);
 
-  /* Cyan replaced with light lavender for gradient text */
-  --color-cyan-300: #d7c4ec;
-  --color-cyan-400: #b095d8;
-  --color-cyan-500: #9176c4;
+  /* --- Amber folded into brass ------------------------------ */
+  --color-amber-100: oklch(0.97 0.035 92);
+  --color-amber-300: oklch(0.9 0.11 88);
+  --color-amber-400: oklch(0.86 0.14 86);
+  --color-amber-500: oklch(0.8 0.16 84);
 
-  /* Red — warm brick */
-  --color-red-300: #df8d8b;
-  --color-red-400: #c6605e;
-  --color-red-500: #aa4644;
-  --color-red-600: #893633;
+  --color-sky-300: oklch(0.84 0.06 210);
+  --color-sky-400: oklch(0.76 0.08 210);
 
-  /* Amber — warm gold accents */
-  --color-amber-300: #e5bf65;
-  --color-amber-400: #d3a542;
-  --color-amber-500: #b8892a;
-
-  /* Sky — for scheduled status */
-  --color-sky-300: #9ec7e8;
-  --color-sky-400: #6fa6d2;
-  --color-sky-500: #4a87b7;
-
-  /* Blue muted */
-  --color-blue-300: #97acdc;
-  --color-blue-400: #6c84c0;
-  --color-blue-500: #4d68a4;
-
-  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* --- Type -------------------------------------------------
+     Not Inter. Fraunces carries the scoresheet's printed
+     heritage in headings; Public Sans is a plain, legible
+     workhorse for dense UI. */
+  --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
 /* ============================================================
    Base
    ============================================================ */
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
-  font-family: var(--font-family-sans);
+  font-family: var(--font-sans);
   background-color: var(--color-slate-900);
-  color: var(--color-slate-100);
+  color: var(--color-slate-200);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Ivory warmth in the corners + purple glow opposite — keeps the
-     room feeling lit rather than pitch-black. */
+}
+
+/* Felt weave. Two hairline repeating washes, not a decorative
+   blur: it gives the ground a material without becoming an
+   effect the eye tracks. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
   background-image:
-    radial-gradient(circle at 15% 0%, rgba(244, 236, 217, 0.1), transparent 55%),
-    radial-gradient(circle at 85% 100%, rgba(139, 101, 200, 0.18), transparent 55%);
-  background-attachment: fixed;
+    repeating-linear-gradient(
+      22deg,
+      oklch(1 0 0 / 0.012) 0px,
+      oklch(1 0 0 / 0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      112deg,
+      oklch(0 0 0 / 0.02) 0px,
+      oklch(0 0 0 / 0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ttt-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings:
+    'SOFT' 0,
+    'WONK' 1;
+  letter-spacing: -0.02em;
+}
+
+/* Notation: move lists, room codes, ratings. Tabular so digits
+   line up the way they would in a printed scoresheet. */
+.ttt-notation {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 ::selection {
-  background-color: rgba(168, 132, 212, 0.35);
+  background-color: oklch(0.8 0.16 84 / 0.3);
   color: var(--color-slate-100);
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--color-slate-900);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 132, 212, 0.25);
-  border-radius: 4px;
+  background: oklch(0.475 0.035 154);
+  border-radius: 5px;
+  border: 2px solid var(--color-slate-900);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 132, 212, 0.5);
+  background: oklch(0.55 0.03 153);
 }
 
 /* ============================================================
-   text-white remapping — make it ivory across the dark theme.
+   The board — a felt table with a ruled grid.
+
+   The chrome stays still. Motion is spent here and nowhere
+   else: a mark landing, a sub-board being taken.
    ============================================================ */
-
-.text-white {
-  color: var(--color-slate-100);
-}
-
-/* ============================================================
-   Surface tuning — soft purple inner glow on cards
-   ============================================================ */
-
-.bg-slate-800 {
-  /* Warm ivory rim + soft shadow — cards read as parchment-lit. */
-  box-shadow:
-    0 1px 0 rgba(244, 236, 217, 0.08) inset,
-    0 10px 30px rgba(0, 0, 0, 0.35);
-  border-color: rgba(244, 236, 217, 0.08);
-}
-
-input,
-textarea,
-select {
-  color: var(--color-slate-100);
-  background-color: var(--color-slate-900);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: var(--color-slate-500);
-}
-
-/* ============================================================
-   Game animations
-   ============================================================ */
-
-@keyframes board-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 14px rgba(139, 101, 200, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 28px rgba(139, 101, 200, 0.65);
-  }
-}
-
-@keyframes hint-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(111, 166, 210, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 22px rgba(111, 166, 210, 0.85);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gradient-text {
-  background-size: 200% 200%;
-  animation: gradient-shift 5s ease infinite;
-}
-
-/* ============================================================
-   Bright mode — ivory background, dark purple text & accents.
-   Activated by adding .bright class on <html>.
-   ============================================================ */
-
-.bright {
-  --color-slate-900: #f1ead7; /* page = ivory */
-  --color-slate-800: #faf4e3; /* card = cream */
-  --color-slate-700: #e2d8bd; /* border = warm tan */
-  --color-slate-600: #c0b497;
-  --color-slate-500: #8a7d6a;
-  --color-slate-400: #635742;
-  --color-slate-300: #443a55;
-  --color-slate-200: #2d2440;
-  --color-slate-100: #1d1530; /* ink-dark text */
-}
-
-.bright body {
-  background-color: var(--color-slate-900);
-  color: var(--color-slate-100);
-  background-image:
-    radial-gradient(circle at 15% 0%, rgba(99, 54, 160, 0.06), transparent 55%),
-    radial-gradient(circle at 85% 100%, rgba(184, 136, 48, 0.08), transparent 55%);
-}
-
-.bright .bg-slate-800 {
-  box-shadow: 0 1px 2px rgba(38, 25, 56, 0.08);
-  border-color: rgba(38, 25, 56, 0.08);
-}
-
-/* In bright mode, .text-white maps to dark ink (slate-100), which is wrong
-   on purple/dark surfaces. Force ivory back where the surface is dark. */
-.bright .bg-indigo-500.text-white,
-.bright .bg-indigo-600.text-white,
-.bright .bg-indigo-700.text-white,
-.bright .bg-indigo-800.text-white,
-.bright .bg-violet-500.text-white,
-.bright .bg-violet-600.text-white,
-.bright .bg-violet-700.text-white,
-.bright .bg-emerald-500.text-white,
-.bright .bg-emerald-600.text-white,
-.bright .bg-emerald-700.text-white,
-.bright .bg-rose-500.text-white,
-.bright .bg-rose-600.text-white,
-.bright .bg-red-500.text-white,
-.bright .bg-red-600.text-white,
-.bright [class*='from-indigo-'].text-white,
-.bright [class*='from-violet-'].text-white,
-.bright [class*='from-emerald-'].text-white,
-.bright [class*='from-rose-'].text-white,
-.bright [class*='from-red-'].text-white,
-.bright [class*='from-purple-'].text-white {
-  color: #faf4e3;
-}
-
-.bright input,
-.bright textarea,
-.bright select {
-  background-color: var(--color-slate-800);
-  color: var(--color-slate-100);
-}
-
-/* ============================================================
-   Tic-Tac-Toe board palette — black, deep purple, silvery,
-   dark-brown. Applied via .ttt-* classes regardless of mode.
-   ============================================================ */
-
-:root {
-  --ttt-board-grad: linear-gradient(135deg, #0a0610 0%, #1a0f08 50%, #0a0610 100%);
-  --ttt-cell-grad: linear-gradient(160deg, #1a120a 0%, #0e0816 100%);
-  --ttt-cell-hover: linear-gradient(160deg, #261a10 0%, #170c22 100%);
-  --ttt-silver: #c9c2b3;
-  --ttt-silver-dim: rgba(201, 194, 179, 0.32);
-  --ttt-purple: #8b65c8;
-  --ttt-purple-glow: rgba(139, 101, 200, 0.55);
-  --ttt-brown-trim: rgba(122, 80, 40, 0.45);
-}
 
 .ttt-superboard {
-  background: var(--ttt-board-grad);
-  border: 1px solid var(--ttt-silver-dim);
+  background: oklch(0.255 0.038 158);
+  border: 1px solid oklch(0.8 0.16 84 / 0.4);
+  border-radius: 0.5rem;
   box-shadow:
-    0 0 0 1px rgba(122, 80, 40, 0.25) inset,
-    0 18px 50px rgba(0, 0, 0, 0.55),
-    0 0 80px rgba(139, 101, 200, 0.18);
+    inset 0 0 0 1px oklch(0 0 0 / 0.35),
+    inset 0 2px 24px oklch(0 0 0 / 0.45),
+    0 1px 0 oklch(1 0 0 / 0.06);
 }
 
 .ttt-subboard {
-  background: #0a0610;
-  border: 1px solid var(--ttt-silver-dim);
-  box-shadow: 0 0 0 1px var(--ttt-brown-trim) inset;
-  transition:
-    box-shadow 250ms ease,
-    border-color 250ms ease;
+  background: oklch(0.295 0.036 157);
+  border: 1px solid oklch(0.475 0.035 154 / 0.9);
+  border-radius: 0.375rem;
 }
 
+/* The board you must play in. A brass rule, not a glow. */
 .ttt-subboard.active {
-  border-color: var(--ttt-purple);
+  border-color: oklch(0.83 0.155 85 / 0.95);
   box-shadow:
-    0 0 0 1px var(--ttt-brown-trim) inset,
-    0 0 24px var(--ttt-purple-glow),
-    0 0 0 2px rgba(139, 101, 200, 0.4);
+    inset 0 0 0 1px oklch(0.83 0.155 85 / 0.3),
+    0 0 0 1px oklch(0.83 0.155 85 / 0.25);
 }
 
 .ttt-subboard.dim {
-  opacity: 0.55;
+  opacity: 0.62;
 }
 
 .ttt-subboard-overlay {
-  background: rgba(10, 6, 16, 0.85);
-  backdrop-filter: blur(2px);
+  background: oklch(0.255 0.038 158 / 0.85);
 }
 
 .ttt-cell {
-  background: var(--ttt-cell-grad);
-  border: 1px solid rgba(201, 194, 179, 0.18);
-  color: var(--ttt-silver);
-  transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    transform 120ms ease;
+  background: oklch(0.225 0.032 158);
+  border: 1px solid oklch(0.475 0.035 154 / 0.5);
+  color: var(--color-slate-300);
+  /* transform only, per the motion rules */
+  transition: transform 140ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .ttt-cell.playable:hover:not(:disabled) {
-  background: var(--ttt-cell-hover);
-  border-color: var(--ttt-silver);
-  transform: scale(1.05);
+  background: oklch(0.275 0.035 157);
+  border-color: oklch(0.83 0.155 85 / 0.6);
 }
 
+/* X is chalk. O is red pencil. Two hands, one sheet. */
 .ttt-cell.x-piece {
-  color: var(--ttt-purple);
-  text-shadow:
-    0 0 8px var(--ttt-purple-glow),
-    0 0 18px rgba(139, 101, 200, 0.35);
+  color: var(--color-slate-100);
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.5);
 }
 
 .ttt-cell.o-piece {
-  color: var(--ttt-silver);
-  text-shadow:
-    0 0 8px rgba(201, 194, 179, 0.55),
-    0 0 18px rgba(201, 194, 179, 0.3);
-}
-
-.ttt-overlay-x {
-  color: var(--ttt-purple);
-  text-shadow: 0 0 14px var(--ttt-purple-glow);
-}
-.ttt-overlay-o {
-  color: var(--ttt-silver);
-  text-shadow: 0 0 14px rgba(201, 194, 179, 0.55);
+  color: var(--color-rose-300);
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.5);
 }
 
 .ttt-cell.hint {
-  border-color: #6fa6d2;
-  box-shadow: 0 0 12px rgba(111, 166, 210, 0.5);
+  border-color: oklch(0.83 0.155 85 / 0.9);
+  background: oklch(0.83 0.155 85 / 0.16);
 }
-.ttt-cell.last {
-  border-color: #d3a542;
-  box-shadow: 0 0 10px rgba(211, 165, 66, 0.45);
+
+.ttt-cell:disabled {
+  cursor: default;
 }
-.ttt-cell.best {
-  border-color: #79ad88;
-  box-shadow: 0 0 10px rgba(121, 173, 136, 0.45);
+
+/* A taken sub-board is stamped, the way a finished game is
+   marked off on a paper sheet. */
+.ttt-overlay-x {
+  color: var(--color-slate-100);
+  opacity: 0.92;
+}
+
+.ttt-overlay-o {
+  color: var(--color-rose-300);
+  opacity: 0.92;
 }
 
 /* ============================================================
-   Alternate themes (preserved, opt-in via class on root)
+   Motion policy
+
+   prefers-reduced-motion renders a complete stable final state,
+   never the same animation played faster.
    ============================================================ */
-
-.retro {
-  --bg-color: #2b2b2b;
-  --text-color: #ffffff;
-  --board-bg: #000000;
-  --x-color: #ff0000;
-  --o-color: #0000ff;
-}
-.retro * {
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  font-family: 'Courier New', Courier, monospace !important;
-}
-.retro .bg-slate-900 {
-  background-color: var(--bg-color) !important;
-}
-.retro .bg-slate-800 {
-  background-color: var(--board-bg) !important;
-  border: 2px solid #fff;
-}
-
-.neon {
-  --bg-color: #050510;
-  --text-color: #00ffcc;
-  --board-bg: #0a0a20;
-  --x-color: #ff00ff;
-  --o-color: #00ffff;
-}
-.neon * {
-  font-family: 'Orbitron', 'Inter', sans-serif;
-}
-.neon .bg-slate-900 {
-  background-color: var(--bg-color) !important;
-}
-.neon .bg-slate-800 {
-  background-color: var(--board-bg) !important;
-  border: 1px solid #ff00ff;
-  box-shadow:
-    0 0 10px #ff00ff,
-    inset 0 0 10px #ff00ff !important;
-}
-
-.minimalist {
-  --bg-color: #f8fafc;
-  --text-color: #0f172a;
-  --board-bg: #ffffff;
-  --x-color: #000000;
-  --o-color: #94a3b8;
-}
-.minimalist .bg-slate-900 {
-  background-color: var(--bg-color) !important;
-  color: var(--text-color) !important;
-}
-.minimalist .bg-slate-800 {
-  background-color: var(--board-bg) !important;
-  border: 1px solid #e2e8f0;
-  box-shadow: none !important;
-}
-
-/* Display face for the wordmark. Falls back cleanly if Orbitron is blocked. */
-.ttt-display {
-  font-family: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
-}
-
-/* Honour the operating system's reduced-motion preference throughout. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

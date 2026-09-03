@@ -70,7 +70,7 @@ export default function LobbyPage() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-bold text-white">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-bold text-slate-900">
                 {(profile?.displayName ?? user?.displayName ?? '?').charAt(0).toUpperCase()}
               </div>
             )}
@@ -104,17 +104,17 @@ export default function LobbyPage() {
             type="button"
             onClick={() => createMatch('pvp')}
             disabled={!ready || pending !== null}
-            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-600 p-5 text-left shadow-lg shadow-indigo-950/50 transition hover:-translate-y-0.5 hover:bg-indigo-500 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-600 p-5 text-left shadow-lg shadow-slate-900/60 transition hover:-translate-y-0.5 hover:bg-indigo-500 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900/20 text-slate-900">
               {pending === 'create' ? (
                 <Spinner size="sm" inline label="Creating" />
               ) : (
                 <Plus size={20} aria-hidden="true" />
               )}
             </span>
-            <span className="font-semibold text-white">Create a game</span>
-            <span className="text-sm text-indigo-100/80">Get a code to share with a friend.</span>
+            <span className="ttt-display text-lg font-semibold text-slate-900">Create a game</span>
+            <span className="text-sm text-slate-900/75">Get a code to share with a friend.</span>
           </button>
 
           <button
@@ -130,7 +130,9 @@ export default function LobbyPage() {
                 <Bot size={20} aria-hidden="true" />
               )}
             </span>
-            <span className="font-semibold text-slate-100">Play the computer</span>
+            <span className="ttt-display text-lg font-semibold text-slate-100">
+              Play the computer
+            </span>
             <span className="text-sm text-slate-400">
               Practice on your own. Not counted in your record.
             </span>
@@ -138,7 +140,7 @@ export default function LobbyPage() {
         </motion.section>
 
         <section className="mb-6 rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="mb-3 flex items-center gap-2 font-semibold text-slate-100">
+          <h2 className="ttt-display mb-3 flex items-center gap-2 text-lg font-semibold text-slate-100">
             <Users size={18} aria-hidden="true" />
             Join with a code
           </h2>
@@ -157,12 +159,12 @@ export default function LobbyPage() {
               spellCheck={false}
               aria-invalid={joinError !== null}
               aria-describedby={joinError ? 'join-error' : undefined}
-              className="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-center font-mono text-lg tracking-[0.3em] text-slate-100 placeholder:tracking-normal placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+              className="ttt-notation min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-center text-lg tracking-[0.3em] text-slate-100 placeholder:tracking-normal placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
             />
             <button
               type="submit"
               disabled={!ready || code.trim().length < 4 || pending !== null}
-              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-slate-900 transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {pending === 'join' ? 'Joining…' : 'Join'}
             </button>
@@ -175,7 +177,7 @@ export default function LobbyPage() {
         </section>
 
         <section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="mb-4 font-semibold text-slate-100">Your record</h2>
+          <h2 className="ttt-display mb-4 text-lg font-semibold text-slate-100">Your record</h2>
           {statsLoading && !profile ? (
             <Spinner label="Loading your record" />
           ) : (
@@ -229,7 +231,7 @@ export default function LobbyPage() {
 function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
   return (
     <div className="rounded-xl bg-slate-900/50 py-3">
-      <dd className={`text-2xl font-bold ${tone ?? 'text-slate-100'}`}>{value}</dd>
+      <dd className={`ttt-notation text-2xl font-semibold ${tone ?? 'text-slate-100'}`}>{value}</dd>
       <dt className="text-xs text-slate-500">{label}</dt>
     </div>
   );

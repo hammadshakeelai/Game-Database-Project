@@ -212,8 +212,8 @@ export default function GamePage() {
 const btnBase =
   'inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-40';
 const btnGhost = `${btnBase} border border-slate-700 bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-slate-100`;
-const btnPrimary = `${btnBase} bg-indigo-600 text-white hover:bg-indigo-500`;
-const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-500`;
+const btnPrimary = `${btnBase} bg-indigo-600 text-slate-900 hover:bg-indigo-500`;
+const btnDanger = `${btnBase} bg-red-500 text-slate-900 hover:bg-red-400`;
 
 /**
  * Back-to-lobby control.
@@ -255,7 +255,7 @@ function LeaveButton({ forfeits, onLeave }: { forfeits: boolean; onLeave: () => 
       }}
     >
       <ArrowLeft size={16} aria-hidden="true" />
-      {confirming ? 'Leaving forfeits — tap again' : 'Lobby'}
+      {confirming ? 'Leaving forfeits. Tap again' : 'Lobby'}
     </button>
   );
 }
@@ -263,7 +263,7 @@ function LeaveButton({ forfeits, onLeave }: { forfeits: boolean; onLeave: () => 
 function Centered({ title, body }: { title: string; body: string }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-slate-900 px-6 text-center">
-      <h1 className="text-xl font-bold text-slate-100">{title}</h1>
+      <h1 className="ttt-display text-2xl font-semibold text-slate-100">{title}</h1>
       <p className="max-w-sm text-sm text-slate-400">{body}</p>
       <Link to="/play" className={btnPrimary}>
         Back to the lobby
@@ -330,7 +330,7 @@ function WaitingNotice({ code }: { code: string }) {
   return (
     <div className="mb-4 rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-4 text-center">
       <p className="text-sm text-indigo-100">
-        Share the code <strong className="font-mono tracking-widest">{code}</strong> or the link
+        Share the code <strong className="ttt-notation tracking-widest">{code}</strong> or the link
         above. The game starts as soon as they join.
       </p>
     </div>
@@ -356,7 +356,7 @@ function ShareCode({ code }: { code: string }) {
     <button
       type="button"
       onClick={copy}
-      className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 font-mono text-sm tracking-widest text-slate-200 transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
+      className="ttt-notation flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm tracking-widest text-slate-200 transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
     >
       {code}
       {copied ? (
@@ -416,7 +416,7 @@ function ResultPanel({
       aria-live="polite"
     >
       <h2
-        className={`mb-1 text-2xl font-black ${
+        className={`ttt-display mb-1 text-3xl font-semibold ${
           outcome === 'win'
             ? 'text-emerald-300'
             : outcome === 'loss'

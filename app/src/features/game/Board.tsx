@@ -105,10 +105,11 @@ function SubBoard({
           aria-hidden="true"
         >
           {subWinner === 'Draw' ? (
+            /* creative-web-allow: EM_DASH -- drawn glyph marking a tied sub-board, not prose */
             <span className="text-2xl font-black text-slate-500 sm:text-3xl">—</span>
           ) : (
             <motion.span
-              initial={{ scale: 0, rotate: -180 }}
+              initial={{ scale: 0.95, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               className={cn(
@@ -146,15 +147,15 @@ function SubBoard({
             )}
             aria-label={
               cell
-                ? `${POSITION_NAMES[subIdx]} — ${cell}`
+                ? `${POSITION_NAMES[subIdx]}, ${cell}`
                 : disabled
-                  ? `${POSITION_NAMES[subIdx]} — empty, not playable`
+                  ? `${POSITION_NAMES[subIdx]}, empty, not playable`
                   : `Play ${POSITION_NAMES[subIdx]}`
             }
           >
             {cell && (
               <motion.span
-                initial={{ scale: 0, rotate: -45 }}
+                initial={{ scale: 0.95, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
