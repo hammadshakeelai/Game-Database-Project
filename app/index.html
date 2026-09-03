@@ -1,21 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="night">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta
       name="description"
-      content="Ultimate Tic-Tac-Toe played online. Nine boards inside one: the square you take decides which board your opponent must play in next. Sign in with Google, share a code, play a friend."
+      content="Ultimate Tic-Tac-Toe played online. Nine boards inside one: the square you take decides which board your opponent must play in next. Play friends, climb the ratings, review every move."
     />
-    <meta name="theme-color" content="#274030" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#141020" />
     <title>Super Tic-Tac-Toe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Orbitron:wght@600;700;900&family=Spline+Sans+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Applied before first paint so a day-theme user never sees a dark flash.
+      try {
+        var t = localStorage.getItem('ttt-theme');
+        if (t === 'day' || t === 'night') document.documentElement.dataset.theme = t;
+      } catch (e) {
+        /* storage can be blocked; night is the default either way */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

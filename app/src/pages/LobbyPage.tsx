@@ -6,7 +6,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { useSocket } from '../features/game/useSocket';
 import { ERROR_COPY, type ErrorCode, type MatchView } from '../features/game/types';
 import { Spinner } from '../components/Spinner';
-import { AppShell } from '../components/AppNav';
+import { AppShell } from '../components/AppShell';
 import { ConnectionBanner } from '../components/ConnectionBanner';
 
 type AckResponse = { ok: true; match: MatchView } | { ok: false; code: ErrorCode; message: string };
@@ -59,7 +59,7 @@ export default function LobbyPage() {
   );
 
   return (
-    <AppShell>
+    <AppShell title="Play">
       <div className="w-full">
         <ConnectionBanner connection={connection} error={socketError} />
 
@@ -73,17 +73,17 @@ export default function LobbyPage() {
             type="button"
             onClick={() => createMatch('pvp')}
             disabled={!ready || pending !== null}
-            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-600 p-5 text-left shadow-lg shadow-slate-900/60 transition hover:-translate-y-0.5 hover:bg-indigo-500 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="group flex flex-col items-start gap-2 rounded-2xl bg-indigo-700 p-5 text-left shadow-lg shadow-slate-900/60 transition hover:-translate-y-0.5 hover:bg-indigo-600 active:translate-y-0 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900/20 text-slate-900">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100/15 text-slate-100">
               {pending === 'create' ? (
                 <Spinner size="sm" inline label="Creating" />
               ) : (
                 <Plus size={20} aria-hidden="true" />
               )}
             </span>
-            <span className="ttt-display text-lg font-semibold text-slate-900">Create a game</span>
-            <span className="text-sm text-slate-900/75">Get a code to share with a friend.</span>
+            <span className="text-lg font-semibold text-slate-100">Create a game</span>
+            <span className="text-sm text-indigo-100/85">Get a code to share with a friend.</span>
           </button>
 
           <button
@@ -109,7 +109,7 @@ export default function LobbyPage() {
         </motion.section>
 
         <section className="mb-6 rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="ttt-display mb-3 flex items-center gap-2 text-lg font-semibold text-slate-100">
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-100">
             <Users size={18} aria-hidden="true" />
             Join with a code
           </h2>
@@ -133,7 +133,7 @@ export default function LobbyPage() {
             <button
               type="submit"
               disabled={!ready || code.trim().length < 4 || pending !== null}
-              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-slate-900 transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-indigo-700 px-6 py-3 font-semibold text-slate-100 transition hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {pending === 'join' ? 'Joining…' : 'Join'}
             </button>
@@ -146,7 +146,7 @@ export default function LobbyPage() {
         </section>
 
         <section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-5">
-          <h2 className="ttt-display mb-4 text-lg font-semibold text-slate-100">Your record</h2>
+          <h2 className="mb-4 text-lg font-semibold text-slate-100">Your record</h2>
           {statsLoading && !profile ? (
             <Spinner label="Loading your record" />
           ) : (

@@ -54,7 +54,7 @@ export function EvalBar({ evaluation }: { evaluation: number }) {
   return (
     <section aria-label="Engine evaluation">
       <div className="mb-1.5 flex items-baseline justify-between">
-        <h3 className="ttt-display text-sm font-semibold text-slate-200">Evaluation</h3>
+        <h3 className="text-sm font-semibold text-slate-200">Evaluation</h3>
         <span className="ttt-notation text-xs text-slate-400">
           {leader === null ? 'level' : `${leader} ahead`}
         </span>
@@ -91,7 +91,7 @@ export function MoveLog({ log }: { log: MoveAccuracyLog[] }) {
 
   return (
     <section aria-label="Move list">
-      <h3 className="ttt-display mb-1.5 text-sm font-semibold text-slate-200">Moves</h3>
+      <h3 className="mb-1.5 text-sm font-semibold text-slate-200">Moves</h3>
       {log.length === 0 ? (
         <p className="text-xs text-slate-500">No moves yet.</p>
       ) : (
@@ -156,7 +156,7 @@ export function ChatPanel({
 
   return (
     <section aria-label="Match chat">
-      <h3 className="ttt-display mb-1.5 text-sm font-semibold text-slate-200">Chat</h3>
+      <h3 className="mb-1.5 text-sm font-semibold text-slate-200">Chat</h3>
 
       <ul className="mb-2 max-h-40 min-h-16 overflow-y-auto rounded-md border border-slate-700 bg-slate-900/50 px-2.5 py-2">
         {messages.length === 0 ? (
@@ -200,7 +200,7 @@ export function ChatPanel({
         <button
           type="submit"
           disabled={disabled || draft.trim().length === 0}
-          className="shrink-0 rounded-md bg-indigo-600 px-2.5 text-slate-900 transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300 disabled:opacity-40 motion-reduce:hover:scale-100"
+          className="shrink-0 rounded-md bg-indigo-700 px-2.5 text-slate-100 transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300 disabled:opacity-40 motion-reduce:hover:scale-100"
         >
           <Send size={14} aria-hidden="true" />
           <span className="sr-only">Send</span>

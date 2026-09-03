@@ -90,7 +90,7 @@ export default function SignInPage() {
           type="button"
           onClick={handleSignIn}
           disabled={busy}
-          className="flex w-full max-w-sm items-center justify-center gap-3 rounded-lg bg-indigo-600 px-5 py-3.5 font-semibold text-slate-900 transition-transform duration-150 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:opacity-60 motion-reduce:hover:scale-100"
+          className="flex w-full max-w-sm items-center justify-center gap-3 rounded-lg bg-indigo-700 px-5 py-3.5 font-semibold text-slate-100 transition-transform duration-150 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:opacity-60 motion-reduce:hover:scale-100"
         >
           {busy ? <Spinner size="sm" inline label="Opening Google" /> : <GoogleIcon />}
           {busy ? 'Opening Google…' : 'Continue with Google'}

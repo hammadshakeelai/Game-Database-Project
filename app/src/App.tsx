@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './features/auth/AuthContext';
+import { ThemeProvider } from './features/theme/ThemeContext';
 import SignInPage from './pages/SignInPage';
 import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
@@ -37,53 +38,55 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SignInPage />} />
-          <Route
-            path="/play"
-            element={
-              <RequireAuth>
-                <LobbyPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/play/:matchId"
-            element={
-              <RequireAuth>
-                <GamePage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/leaderboard"
-            element={
-              <RequireAuth>
-                <LeaderboardPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/me"
-            element={
-              <RequireAuth>
-                <ProfilePage self />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/players/:uid"
-            element={
-              <RequireAuth>
-                <ProfilePage />
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<SignInPage />} />
+            <Route
+              path="/play"
+              element={
+                <RequireAuth>
+                  <LobbyPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/play/:matchId"
+              element={
+                <RequireAuth>
+                  <GamePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <RequireAuth>
+                  <LeaderboardPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/me"
+              element={
+                <RequireAuth>
+                  <ProfilePage self />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/players/:uid"
+              element={
+                <RequireAuth>
+                  <ProfilePage />
+                </RequireAuth>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

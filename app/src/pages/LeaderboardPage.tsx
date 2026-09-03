@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { AppShell } from '../components/AppNav';
+import { AppShell } from '../components/AppShell';
 import { Spinner } from '../components/Spinner';
 import { cn } from '../utils';
 
@@ -48,7 +48,7 @@ export default function LeaderboardPage() {
   }, [getToken]);
 
   return (
-    <AppShell>
+    <AppShell title="Ratings">
       <h1 className="ttt-display mb-1 text-2xl font-semibold text-slate-100">Standings</h1>
       <p className="mb-6 text-sm text-slate-400">
         Ranked by rating. Everyone starts at 1200; only finished games against people count.

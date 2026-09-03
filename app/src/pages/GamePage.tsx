@@ -10,6 +10,7 @@ import { Spinner } from '../components/Spinner';
 import { ConnectionBanner } from '../components/ConnectionBanner';
 import type { PublicPlayer } from '../features/game/types';
 import { AnalysisColumn } from '../features/game/AnalysisPanel';
+import { AppShell } from '../components/AppShell';
 
 export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -64,7 +65,7 @@ export default function GamePage() {
 
   if (joinState === 'joining' || (joinState === 'idle' && !match)) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-slate-900">
+      <main className="surface-bg flex min-h-dvh items-center justify-center">
         <Spinner label="Loading the game" />
       </main>
     );
@@ -94,8 +95,8 @@ export default function GamePage() {
     match.role !== 'spectator' && match.rematchRequestedBy.includes(match.role);
 
   return (
-    <main className="min-h-dvh bg-slate-900 px-3 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto w-full max-w-4xl">
+    <AppShell title="Game" wide>
+      <div className="w-full px-3 py-4 sm:px-6">
         <header className="mb-4 flex items-center justify-between gap-3">
           <LeaveButton
             forfeits={match.status === 'active' && match.role !== 'spectator'}
@@ -220,14 +221,14 @@ export default function GamePage() {
           )}
         </AnimatePresence>
       </div>
-    </main>
+    </AppShell>
   );
 }
 
 const btnBase =
   'inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-40';
 const btnGhost = `${btnBase} border border-slate-700 bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-slate-100`;
-const btnPrimary = `${btnBase} bg-indigo-600 text-slate-900 hover:bg-indigo-500`;
+const btnPrimary = `${btnBase} bg-indigo-700 text-slate-100 hover:bg-indigo-600`;
 const btnDanger = `${btnBase} bg-red-600 text-slate-100 hover:bg-red-500 hover:text-slate-900`;
 
 /**
@@ -277,7 +278,7 @@ function LeaveButton({ forfeits, onLeave }: { forfeits: boolean; onLeave: () => 
 
 function Centered({ title, body }: { title: string; body: string }) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-slate-900 px-6 text-center">
+    <main className="surface-bg flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
       <h1 className="ttt-display text-2xl font-semibold text-slate-100">{title}</h1>
       <p className="max-w-sm text-sm text-slate-400">{body}</p>
       <Link to="/play" className={btnPrimary}>

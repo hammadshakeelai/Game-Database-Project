@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth, type RecentMatch } from '../features/auth/AuthContext';
-import { AppShell } from '../components/AppNav';
+import { AppShell } from '../components/AppShell';
 import { Spinner } from '../components/Spinner';
 import { cn } from '../utils';
 
@@ -63,7 +63,7 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
 
   if (state === 'loading') {
     return (
-      <AppShell>
+      <AppShell title="Profile">
         <Spinner label="Loading the record" />
       </AppShell>
     );
@@ -71,7 +71,7 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
 
   if (state === 'missing' || !profile) {
     return (
-      <AppShell>
+      <AppShell title="Profile">
         <h1 className="ttt-display mb-2 text-2xl font-semibold text-slate-100">
           {state === 'error' ? 'Could not load that player' : 'No such player'}
         </h1>
@@ -90,7 +90,7 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
   const isYou = profile.uid === user?.uid;
 
   return (
-    <AppShell>
+    <AppShell title="Profile">
       <header className="mb-6 flex items-center gap-4">
         {profile.photoURL ? (
           <img
@@ -125,7 +125,7 @@ export default function ProfilePage({ self = false }: { self?: boolean }) {
         <Stat label="Drawn" value={profile.draws} />
       </dl>
 
-      <h2 className="ttt-display mb-3 text-lg font-semibold text-slate-100">Recent games</h2>
+      <h2 className="mb-3 text-lg font-semibold text-slate-100">Recent games</h2>
 
       {profile.recent.length === 0 ? (
         <p className="rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-6 text-center text-sm text-slate-400">
