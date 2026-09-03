@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { useAuth } from '../features/auth/AuthContext';
 import { SignInError } from '../lib/firebase';
 import { GoogleIcon } from '../components/GoogleIcon';
 import { Spinner } from '../components/Spinner';
+import { ClassicDemo, UltimateDemo } from '../features/demo/DemoBoards';
 
 /**
- * Sign-in screen. Also the landing page — there is nothing to do here without
- * an account, so a separate marketing page would only add a click.
+ * Sign-in, and the only Persuade-mode page in the app.
+ *
+ * A visitor who has never met Ultimate Tic-Tac-Toe cannot be talked into it, so
+ * the page shows both games side by side and lets them play. The rule explains
+ * itself in about two moves.
  */
 export default function SignInPage() {
   const { status, signIn } = useAuth();
@@ -21,25 +24,25 @@ export default function SignInPage() {
 
   if (status === 'loading') {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-slate-900">
+      <main className="flex min-h-dvh items-center justify-center">
         <Spinner label="Checking your session" />
       </main>
     );
   }
 
-  if (status === 'signed-in') {
-    return <Navigate to={next ?? '/play'} replace />;
-  }
+  if (status === 'signed-in') return <Navigate to={next ?? '/play'} replace />;
 
   if (status === 'unconfigured') {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-slate-900 p-6">
-        <div className="max-w-md rounded-2xl border border-slate-700 bg-slate-800 p-6 text-center">
-          <h1 className="mb-2 text-xl font-bold text-slate-100">Not configured yet</h1>
+      <main className="flex min-h-dvh items-center justify-center p-6">
+        <div className="max-w-md rounded-lg border border-slate-700 bg-slate-800 p-6 text-center">
+          <h1 className="ttt-display mb-2 text-xl font-semibold text-slate-100">
+            Not configured yet
+          </h1>
           <p className="text-sm text-slate-400">
             This deployment is missing its Firebase settings, so sign-in is unavailable. See{' '}
-            <code className="text-indigo-300">.env.example</code> in the repository for the values
-            it needs.
+            <code className="ttt-notation text-indigo-300">.env.example</code> in the repository for
+            the values it needs.
           </p>
         </div>
       </main>
@@ -52,88 +55,68 @@ export default function SignInPage() {
     try {
       await signIn();
     } catch (err) {
-      // A cancelled popup is a normal thing to do, not an error worth shouting about.
-      if (err instanceof SignInError && err.kind === 'cancelled') {
-        setError(null);
-      } else if (err instanceof SignInError) {
-        setError(err.message);
-      } else {
-        setError('Sign-in failed. Please try again.');
-      }
+      // Closing the popup is a normal thing to do, not an error worth shouting about.
+      if (err instanceof SignInError && err.kind === 'cancelled') setError(null);
+      else if (err instanceof SignInError) setError(err.message);
+      else setError('Sign-in failed. Please try again.');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-slate-900 px-6 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-sm text-center"
-      >
-        <div className="mb-8">
-          <MiniBoardMark />
-        </div>
+    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col justify-center gap-10 px-5 py-10 lg:flex-row lg:items-center lg:gap-14">
+      {/* The pitch */}
+      <div className="lg:flex-1">
+        <p className="ttt-notation mb-4 text-xs tracking-[0.25em] text-indigo-300 uppercase">
+          Nine boards, one game
+        </p>
 
-        <h1 className="ttt-display mb-3 text-4xl font-black tracking-tight text-slate-100 sm:text-5xl">
-          Super Tic-Tac-Toe
+        <h1 className="ttt-display mb-5 text-4xl leading-[1.05] font-semibold text-slate-100 sm:text-5xl">
+          Super
+          <br />
+          Tic-Tac-Toe
         </h1>
-        <p className="mx-auto mb-10 max-w-xs text-balance text-sm leading-relaxed text-slate-400">
-          Nine boards inside one. Where you play decides where your opponent must play next.
+
+        <p className="mb-2 max-w-md text-base leading-relaxed text-slate-300">
+          Every square you take decides which board your opponent has to play in next.
+        </p>
+        <p className="mb-8 max-w-md text-sm leading-relaxed text-slate-400">
+          So a winning move can hand your opponent the board they wanted. That is the whole game.
+          Try both below, then play a friend.
         </p>
 
         <button
           type="button"
           onClick={handleSignIn}
           disabled={busy}
-          className="group flex w-full items-center justify-center gap-3 rounded-xl bg-slate-100 px-5 py-3.5 font-semibold text-slate-900 shadow-lg transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:opacity-60"
+          className="flex w-full max-w-sm items-center justify-center gap-3 rounded-lg bg-indigo-600 px-5 py-3.5 font-semibold text-slate-900 transition-transform duration-150 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300 disabled:opacity-60 motion-reduce:hover:scale-100"
         >
-          {busy ? <Spinner size="sm" inline /> : <GoogleIcon />}
+          {busy ? <Spinner size="sm" inline label="Opening Google" /> : <GoogleIcon />}
           {busy ? 'Opening Google…' : 'Continue with Google'}
         </button>
 
         {error && (
-          <p role="alert" className="mt-4 text-sm text-red-300">
+          <p role="alert" className="mt-4 max-w-sm text-sm text-red-300">
             {error}
           </p>
         )}
 
-        <p className="mt-8 text-xs text-slate-500">
-          We use your Google account for your name and picture. Nothing is posted on your behalf.
+        <p className="mt-6 max-w-sm text-xs leading-relaxed text-slate-500">
+          Your Google account supplies your name and picture. Nothing is posted on your behalf.
         </p>
-      </motion.div>
-    </main>
-  );
-}
+      </div>
 
-/** A small decorative board that hints at the game's structure. */
-function MiniBoardMark() {
-  const filled: Record<number, 'X' | 'O'> = { 0: 'X', 4: 'O', 8: 'X', 2: 'O', 6: 'X' };
-  return (
-    <div
-      aria-hidden="true"
-      className="mx-auto grid w-24 grid-cols-3 gap-1 rounded-xl border border-slate-700 bg-slate-800 p-2"
-    >
-      {Array.from({ length: 9 }, (_, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 + i * 0.04, type: 'spring', stiffness: 260, damping: 18 }}
-          className={
-            'flex h-6 items-center justify-center rounded text-xs font-black ' +
-            (filled[i] === 'X'
-              ? 'bg-indigo-500/25 text-indigo-200'
-              : filled[i] === 'O'
-                ? 'bg-rose-500/25 text-rose-200'
-                : 'bg-slate-700/40')
-          }
-        >
-          {filled[i] ?? ''}
-        </motion.div>
-      ))}
-    </div>
+      {/* Try it. No account needed. */}
+      <div className="lg:flex-1">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ClassicDemo />
+          <UltimateDemo />
+        </div>
+        <p className="mt-3 text-center text-xs text-slate-500">
+          Both are live. Play them without signing in.
+        </p>
+      </div>
+    </main>
   );
 }

@@ -23,7 +23,7 @@
   --color-slate-800: oklch(0.395 0.04 155); /* card raised off the table */
   --color-slate-700: oklch(0.475 0.035 154); /* border */
   --color-slate-600: oklch(0.55 0.03 153); /* divider, strong border */
-  --color-slate-500: oklch(0.71 0.024 130); /* faint ink */
+  --color-slate-500: oklch(0.745 0.022 128); /* faint ink (measured 4.9:1 on the table) */
   --color-slate-400: oklch(0.82 0.02 105); /* muted ink */
   --color-slate-300: oklch(0.89 0.016 95); /* soft ink */
   --color-slate-200: oklch(0.945 0.014 90); /* ink */
